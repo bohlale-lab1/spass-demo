@@ -201,6 +201,22 @@ body {
     font-size: 13px;
 }
 
+/* Alert Badge */
+.alert-badge {
+    background: #ef4444;
+    color: white;
+    padding: 10px 16px;
+    margin: 10px 16px;
+    border-radius: 30px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
 /* Admin Header */
 .admin-header, .guard-header {
     background: linear-gradient(135deg, #0f2b3d, #1a4a6f);
@@ -397,6 +413,27 @@ body {
     font-size: 11px;
 }
 
+.approve-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 6px;
+}
+
+.deny-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
 /* Guard Dashboard */
 .stats-row {
     display: grid;
@@ -454,6 +491,7 @@ body {
     border-radius: 24px;
     overflow: hidden;
     margin-bottom: 20px;
+    background: #000;
 }
 
 .camera-video {
@@ -474,8 +512,8 @@ body {
 }
 
 .scan-frame-real {
-    width: 250px;
-    height: 150px;
+    width: 280px;
+    height: 120px;
     border: 2px solid #2E75B6;
     border-radius: 16px;
     position: relative;
@@ -495,21 +533,37 @@ body {
 
 @keyframes scanReal {
     0% { top: 0; }
-    100% { top: 148px; }
+    100% { top: 118px; }
 }
 
 .scan-instruction {
     color: white;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     font-size: 14px;
 }
 
-.demo-barcode-input {
+.scan-status {
+    color: #2E75B6;
+    background: rgba(255,255,255,0.9);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+.manual-fallback {
     width: 100%;
-    margin: 10px 0;
+    margin-top: 15px;
     background: white;
     padding: 16px;
     border-radius: 16px;
+}
+
+.divider {
+    text-align: center;
+    color: #94a3b8;
+    margin: 10px 0;
+    font-size: 12px;
 }
 
 .btn-manual {
@@ -762,4 +816,43 @@ body {
 .scan-title {
     font-size: 18px;
     font-weight: 600;
+}
+
+.barcode-value {
+    font-family: monospace;
+    font-size: 12px;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.alerts-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.alert-item {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+}
+
+.alert-student {
+    font-weight: 700;
+    color: #92400e;
+}
+
+.alert-barcode {
+    font-size: 12px;
+    color: #b45309;
+    margin: 5px 0;
+}
+
+.alert-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
 }
