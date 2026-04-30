@@ -1,10 +1,8 @@
 // ========== EMAILJS CONFIGURATION ==========
-// YOUR ACTUAL EmailJS CREDENTIALS
 const EMAILJS_PUBLIC_KEY = "0ES007IZBpdCZsW6d";
 const EMAILJS_SERVICE_ID = "service_0nxc2qy";
 const EMAILJS_TEMPLATE_ID = "template_0y9wskc";
 
-// Initialize EmailJS
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
 // ========== DATABASE ==========
@@ -12,53 +10,51 @@ let currentUser = null;
 let currentRole = null;
 let auditLogs = [];
 let offlineQueue = [];
-let guardHistoryFilter = 'ALL';
 let scannerActive = false;
 let barcodeDetector = null;
 let pendingAlerts = [];
-
-// Password reset storage
 let pendingReset = { username: null, email: null, pin: null, userType: null };
 
-// Asset type icons
 const assetIcons = { 'LAPTOP': '💻', 'FRIDGE': '🧊', 'MICROWAVE': '🍿', 'OTHER': '🔧' };
 
-// ========== USERS WITH EMAILS ==========
+// ========== USERS ==========
 let users = {
     guards: [
-        { id: 'G001', name: 'John Doe', password: '1234', role: 'guard', gate: 'GATE_1', email: 'johndoe@gmail.com' },
-        { id: 'G002', name: 'Jane Smith', password: '1234', role: 'guard', gate: 'GATE_2', email: 'janesmith@gmail.com' }
+        { id: 'G001', name: 'John Doe', password: '1234', role: 'guard', gate: 'GATE_1', email: 'your_email@gmail.com' },
+        { id: 'G002', name: 'Jane Smith', password: '1234', role: 'guard', gate: 'GATE_2', email: 'your_email@gmail.com' }
     ],
     admins: [
-        { id: 'A001', name: 'Admin User', password: '1234', role: 'admin', email: 'admin@gmail.com' }
+        { id: 'A001', name: 'Admin User', password: '1234', role: 'admin', email: 'your_email@gmail.com' }
     ],
     students: [
-        { id: 'S001', student_number: 202394726, name: 'CN MALULEKE', password: '1234', accessibility: 'NONE', is_active: true, email: 'maluleke.cn@gmail.com' },
-        { id: 'S002', student_number: 202393020, name: 'BZ TWALA', password: '1234', accessibility: 'VISUAL_IMPAIRMENT', is_active: true, email: 'twala.bz@gmail.com' },
-        { id: 'S003', student_number: 240015914, name: 'TM SEKGOBELA', password: '1234', accessibility: 'NONE', is_active: true, email: 'sekgobela.tm@gmail.com' },
-        { id: 'S004', student_number: 202247479, name: 'C SETE', password: '1234', accessibility: 'NONE', is_active: true, email: 'sete.c@gmail.com' },
-        { id: 'S005', student_number: 240000760, name: 'CB RAMOLOTO', password: '1234', accessibility: 'NONE', is_active: true, email: 'ramoloto.cb@gmail.com' }
+        { id: 'S001', student_number: 202394726, name: 'CN MALULEKE', password: '1234', accessibility: 'NONE', is_active: true, email: 'your_email@gmail.com' },
+        { id: 'S002', student_number: 202393020, name: 'BZ TWALA', password: '1234', accessibility: 'VISUAL_IMPAIRMENT', is_active: true, email: 'your_email@gmail.com' },
+        { id: 'S003', student_number: 240015914, name: 'TM SEKGOBELA', password: '1234', accessibility: 'NONE', is_active: true, email: 'your_email@gmail.com' },
+        { id: 'S004', student_number: 202247479, name: 'C SETE', password: '1234', accessibility: 'NONE', is_active: true, email: 'your_email@gmail.com' },
+        { id: 'S005', student_number: 240000760, name: 'CB RAMOLOTO', password: '1234', accessibility: 'NONE', is_active: true, email: 'your_email@gmail.com' }
     ]
 };
 
-// ========== ASSETS WITH UNIQUE BARCODES ==========
+// ========== ASSETS ==========
 let assets = [
-    { id: 'AST001', barcode_id: 'S001-LAPTOP-001', asset_type: 'LAPTOP', serial_number: 'SN001', student_id: 'S001', student_name: 'CN MALULEKE', is_active: true },
-    { id: 'AST002', barcode_id: 'S002-FRIDGE-001', asset_type: 'FRIDGE', serial_number: 'SN002', student_id: 'S002', student_name: 'BZ TWALA', is_active: true },
-    { id: 'AST003', barcode_id: 'S003-MICROWAVE-001', asset_type: 'MICROWAVE', serial_number: 'SN003', student_id: 'S003', student_name: 'TM SEKGOBELA', is_active: true },
-    { id: 'AST004', barcode_id: 'S004-LAPTOP-001', asset_type: 'LAPTOP', serial_number: 'SN004', student_id: 'S004', student_name: 'C SETE', is_active: true },
-    { id: 'AST005', barcode_id: 'S005-OTHER-001', asset_type: 'OTHER', serial_number: 'SN005', student_id: 'S005', student_name: 'CB RAMOLOTO', is_active: true }
+    { id: 'AST001', barcode_id: 'BAR001', asset_type: 'LAPTOP', serial_number: 'SN001', student_id: 'S001', student_name: 'CN MALULEKE', is_active: true },
+    { id: 'AST002', barcode_id: 'BAR002', asset_type: 'FRIDGE', serial_number: 'SN002', student_id: 'S002', student_name: 'BZ TWALA', is_active: true },
+    { id: 'AST003', barcode_id: 'BAR003', asset_type: 'MICROWAVE', serial_number: 'SN003', student_id: 'S003', student_name: 'TM SEKGOBELA', is_active: true },
+    { id: 'AST004', barcode_id: 'BAR004', asset_type: 'LAPTOP', serial_number: 'SN004', student_id: 'S004', student_name: 'C SETE', is_active: true },
+    { id: 'AST005', barcode_id: 'BAR005', asset_type: 'OTHER', serial_number: 'SN005', student_id: 'S005', student_name: 'CB RAMOLOTO', is_active: true }
 ];
 
 let selectedRole = 'guard';
 
-// ========== GENERATE UNIQUE BARCODE ==========
-function generateUniqueBarcode(studentId, assetType) {
-    const timestamp = Date.now().toString().slice(-6);
-    const student = users.students.find(s => s.id === studentId);
-    const studentNum = student ? student.student_number : 'XXXX';
-    const typeCode = assetType.substring(0, 3).toUpperCase();
-    return `${studentNum}-${typeCode}-${timestamp}`;
+// ========== VOICE GUIDANCE (Only for Visually Impaired) ==========
+function speakText(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
 }
 
 // ========== REAL BARCODE SCANNER ==========
@@ -67,7 +63,9 @@ async function startCamera() {
     
     try {
         if ('BarcodeDetector' in window) {
-            barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'codabar', 'code_39', 'code_93'] });
+            barcodeDetector = new BarcodeDetector({ 
+                formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'codabar', 'code_39', 'code_93'] 
+            });
         }
         
         const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -80,7 +78,6 @@ async function startCamera() {
         document.getElementById('scanStatus').innerHTML = '📷 Camera active - scanning for barcodes...';
         startBarcodeDetection();
     } catch (err) {
-        console.error('Camera error:', err);
         document.getElementById('scanStatus').innerHTML = '⚠️ Camera access failed. Use manual entry.';
         alert('Camera access denied. Please use manual barcode entry.');
     }
@@ -111,9 +108,7 @@ async function startBarcodeDetection() {
                     processScan(code);
                     return;
                 }
-            } catch (e) {
-                console.log('Detection error:', e);
-            }
+            } catch (e) {}
         }
         
         if (scannerActive) requestAnimationFrame(detectFrame);
@@ -134,7 +129,7 @@ function stopCamera() {
     }
 }
 
-// ========== PROCESS SCAN WITH ADMIN ALERT SYSTEM ==========
+// ========== PROCESS SCAN ==========
 async function processScan(barcodeId) {
     stopCamera();
     
@@ -153,12 +148,10 @@ async function processScan(barcodeId) {
         decision = 'DENIED';
         colour = 'red';
         message = 'Asset not registered in system';
-        speakText('Access denied. Asset not registered.');
     } else if (!asset.is_active) {
         decision = 'DENIED';
         colour = 'red';
         message = 'Asset is deactivated';
-        speakText('Access denied. Asset is deactivated.');
     } else {
         const student = users.students.find(s => s.id === asset.student_id && s.is_active);
         if (student) {
@@ -166,13 +159,16 @@ async function processScan(barcodeId) {
             colour = 'green';
             message = `Exit Authorised for ${student.name}`;
             studentInfo = { ...asset, student_name: student.name, student_number: student.student_number };
-            speakText(`Authorised. ${student.name}, your ${asset.asset_type} has been verified. Exit permitted.`);
+            
+            // Voice guidance ONLY for visually impaired students
+            if (student.accessibility === 'VISUAL_IMPAIRMENT') {
+                speakText(`Authorised. ${student.name}, your ${asset.asset_type} has been verified. Exit permitted.`);
+            }
         } else {
             decision = 'FLAGGED';
             colour = 'amber';
             message = 'Asset ownership mismatch. Admin verification required.';
             studentInfo = asset;
-            speakText(`Flagged. Asset mismatch. Admin has been notified.`);
             
             const alert = {
                 id: Date.now(),
@@ -193,7 +189,6 @@ async function processScan(barcodeId) {
     }
     
     const student = studentInfo ? users.students.find(s => s.id === studentInfo.student_id) : null;
-    const requiresVoice = student?.accessibility === 'VISUAL_IMPAIRMENT';
     
     const logEntry = {
         id: Date.now(),
@@ -204,8 +199,7 @@ async function processScan(barcodeId) {
         barcode_id_scanned: barcodeId,
         decision: decision,
         gate_id: currentUser?.gate || 'GATE_1',
-        asset_type: asset?.asset_type,
-        was_approved: false
+        asset_type: asset?.asset_type
     };
     auditLogs.unshift(logEntry);
     saveAuditLogs();
@@ -216,33 +210,26 @@ async function processScan(barcodeId) {
     }
     if (currentRole === 'admin') updateAdminStats();
     
-    showResult({ decision, subtext: decision === 'AUTHORISED' ? 'Exit Permitted' : (decision === 'FLAGGED' ? 'Pending Admin Approval' : 'Do Not Allow Exit'), message, colour, studentInfo, requiresVoice, barcode: barcodeId, assetType: asset?.asset_type });
+    showResult({ decision, subtext: decision === 'AUTHORISED' ? 'Exit Permitted' : (decision === 'FLAGGED' ? 'Pending Admin Approval' : 'Do Not Allow Exit'), message, colour, studentInfo, barcode: barcodeId, assetType: asset?.asset_type });
 }
 
-// ========== ADMIN APPROVE/DENY FUNCTIONS ==========
+// ========== ADMIN APPROVE/DENY ==========
 function approveAlert(alertId) {
     const alert = pendingAlerts.find(a => a.id === alertId);
     if (!alert) return;
     
-    const logIndex = auditLogs.findIndex(l => l.id === alert.scanId);
-    if (logIndex !== -1) {
-        auditLogs[logIndex].decision = 'AUTHORISED';
-        auditLogs[logIndex].was_approved = true;
-        auditLogs[logIndex].approved_by = 'Admin';
-    } else {
-        auditLogs.unshift({
-            id: alert.scanId,
-            timestamp: alert.timestamp,
-            guard_id: alert.guard_id,
-            student_id: alert.student_id,
-            student_name: alert.student_name,
-            barcode_id_scanned: alert.barcode_id,
-            decision: 'AUTHORISED',
-            gate_id: 'GATE_1',
-            asset_type: alert.asset_type,
-            was_approved: true
-        });
-    }
+    auditLogs.unshift({
+        id: alert.scanId,
+        timestamp: alert.timestamp,
+        guard_id: alert.guard_id,
+        student_id: alert.student_id,
+        student_name: alert.student_name,
+        barcode_id_scanned: alert.barcode_id,
+        decision: 'AUTHORISED',
+        gate_id: 'GATE_1',
+        asset_type: alert.asset_type,
+        was_approved: true
+    });
     
     pendingAlerts = pendingAlerts.filter(a => a.id !== alertId);
     savePendingAlerts();
@@ -250,7 +237,6 @@ function approveAlert(alertId) {
     updateAlertBadge();
     renderPendingAlerts();
     updateAdminStats();
-    
     alert(`✅ Exit approved for ${alert.student_name}`);
 }
 
@@ -258,24 +244,18 @@ function denyAlert(alertId) {
     const alert = pendingAlerts.find(a => a.id === alertId);
     if (!alert) return;
     
-    const logIndex = auditLogs.findIndex(l => l.id === alert.scanId);
-    if (logIndex !== -1) {
-        auditLogs[logIndex].decision = 'DENIED';
-        auditLogs[logIndex].was_denied = true;
-    } else {
-        auditLogs.unshift({
-            id: alert.scanId,
-            timestamp: alert.timestamp,
-            guard_id: alert.guard_id,
-            student_id: alert.student_id,
-            student_name: alert.student_name,
-            barcode_id_scanned: alert.barcode_id,
-            decision: 'DENIED',
-            gate_id: 'GATE_1',
-            asset_type: alert.asset_type,
-            was_denied: true
-        });
-    }
+    auditLogs.unshift({
+        id: alert.scanId,
+        timestamp: alert.timestamp,
+        guard_id: alert.guard_id,
+        student_id: alert.student_id,
+        student_name: alert.student_name,
+        barcode_id_scanned: alert.barcode_id,
+        decision: 'DENIED',
+        gate_id: 'GATE_1',
+        asset_type: alert.asset_type,
+        was_denied: true
+    });
     
     pendingAlerts = pendingAlerts.filter(a => a.id !== alertId);
     savePendingAlerts();
@@ -283,7 +263,6 @@ function denyAlert(alertId) {
     updateAlertBadge();
     renderPendingAlerts();
     updateAdminStats();
-    
     alert(`❌ Exit denied for ${alert.student_name}`);
 }
 
@@ -298,10 +277,10 @@ function renderPendingAlerts() {
     
     container.innerHTML = pendingAlerts.map(alert => `
         <div class="alert-item">
-            <div class="alert-student">🎓 ${alert.student_name}</div>
-            <div class="alert-barcode">📦 Barcode: ${alert.barcode_id} (${alert.asset_type})</div>
-            <div class="alert-barcode">👮 Guard: ${alert.guard_name || alert.guard_id}</div>
-            <div class="alert-barcode">🕐 ${new Date(alert.timestamp).toLocaleString()}</div>
+            <div><strong>${alert.student_name}</strong></div>
+            <div>Barcode: ${alert.barcode_id} (${alert.asset_type})</div>
+            <div>Guard: ${alert.guard_name || alert.guard_id}</div>
+            <div>${new Date(alert.timestamp).toLocaleString()}</div>
             <div class="alert-actions">
                 <button class="approve-btn" onclick="approveAlert(${alert.id})">✅ Approve Exit</button>
                 <button class="deny-btn" onclick="denyAlert(${alert.id})">❌ Deny Exit</button>
@@ -323,18 +302,7 @@ function updateAlertBadge() {
     }
 }
 
-// ========== VOICE GUIDANCE ==========
-function speakText(text) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-    }
-}
-
-// ========== ROLE SELECTION ==========
+// ========== LOGIN ==========
 function selectRole(role) {
     selectedRole = role;
     document.getElementById('roleGuardBtn').classList.toggle('active', role === 'guard');
@@ -349,7 +317,6 @@ function selectRole(role) {
     }
 }
 
-// ========== LOGIN ==========
 function handleLogin() {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
@@ -386,7 +353,7 @@ function handleLogin() {
     }
 }
 
-// ========== FORGOT PASSWORD WITH REAL EMAIL ==========
+// ========== FORGOT PASSWORD (Sends Email - No display on screen) ==========
 function showForgotPassword() {
     document.getElementById('step1Container').style.display = 'block';
     document.getElementById('step2Container').style.display = 'none';
@@ -437,18 +404,16 @@ async function sendResetPin() {
         };
         
         await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-        successDiv.innerHTML = `✓ PIN sent to ${email}`;
+        successDiv.innerHTML = `✓ Verification PIN sent to ${email}. Please check your inbox.`;
         successDiv.style.display = 'block';
         
         document.getElementById('step1Container').style.display = 'none';
         document.getElementById('step2Container').style.display = 'block';
+        document.getElementById('resetPin').value = '';
     } catch (err) {
         console.error('Email error:', err);
-        successDiv.innerHTML = `⚠️ Email service demo. Your PIN is: <strong>${pin}</strong><br>(Check your EmailJS setup to send real emails)`;
-        successDiv.style.display = 'block';
-        document.getElementById('step1Container').style.display = 'none';
-        document.getElementById('step2Container').style.display = 'block';
-        document.getElementById('resetPin').value = pin;
+        errorDiv.innerHTML = 'Failed to send email. Please check your EmailJS setup.';
+        errorDiv.style.display = 'block';
     }
 }
 
@@ -519,97 +484,7 @@ function handleLogout() {
     showScreen('loginScreen');
 }
 
-// ========== ASSET REGISTRATION WITH UNIQUE BARCODE ==========
-function registerAssetWithBarcode() {
-    const assetType = document.getElementById('newAssetType').value;
-    const serialNumber = document.getElementById('newAssetSerial').value;
-    const studentId = document.getElementById('assetStudentId').value;
-    
-    if (!studentId) {
-        document.getElementById('assetRegMessage').innerHTML = '<span style="color:red">Select a student</span>';
-        return;
-    }
-    
-    const student = users.students.find(s => s.id === studentId);
-    if (!student) {
-        document.getElementById('assetRegMessage').innerHTML = '<span style="color:red">Invalid student</span>';
-        return;
-    }
-    
-    const uniqueBarcode = generateUniqueBarcode(studentId, assetType);
-    
-    const newAsset = {
-        id: 'AST' + String(assets.length + 1).padStart(3, '0'),
-        barcode_id: uniqueBarcode,
-        asset_type: assetType,
-        serial_number: serialNumber || 'N/A',
-        student_id: studentId,
-        student_name: student.name,
-        is_active: true
-    };
-    assets.push(newAsset);
-    
-    document.getElementById('assetRegMessage').innerHTML = `<span style="color:green">✓ Asset registered! Barcode: <strong>${uniqueBarcode}</strong></span>`;
-    document.getElementById('newAssetSerial').value = '';
-    renderAssetsTable();
-    updateAdminStats();
-}
-
-function registerStudent() {
-    const studentNumber = document.getElementById('newStudentNumber').value;
-    const name = document.getElementById('newStudentName').value;
-    const email = document.getElementById('newStudentEmail').value;
-    const password = document.getElementById('newStudentPassword').value;
-    const accessibility = document.getElementById('newAccessibility').value;
-    
-    if (!studentNumber || !name || !email || !password) {
-        document.getElementById('studentRegMessage').innerHTML = '<span style="color:red">Fill all fields</span>';
-        return;
-    }
-    
-    const newStudent = {
-        id: 'S' + String(users.students.length + 1).padStart(3, '0'),
-        student_number: parseInt(studentNumber),
-        name: name.toUpperCase(),
-        password: password,
-        email: email,
-        accessibility: accessibility,
-        is_active: true
-    };
-    users.students.push(newStudent);
-    
-    document.getElementById('studentRegMessage').innerHTML = '<span style="color:green">✓ Student registered!</span>';
-    document.getElementById('newStudentNumber').value = '';
-    document.getElementById('newStudentName').value = '';
-    document.getElementById('newStudentEmail').value = '';
-    document.getElementById('newStudentPassword').value = '';
-    renderStudentsTable();
-    populateStudentDropdown();
-    updateAdminStats();
-}
-
-function registerGuard() {
-    const badge = document.getElementById('newGuardBadge').value;
-    const name = document.getElementById('newGuardName').value;
-    const email = document.getElementById('newGuardEmail').value;
-    const password = document.getElementById('newGuardPassword').value;
-    const gate = document.getElementById('newGuardGate').value;
-    
-    if (!badge || !name || !email || !password) {
-        document.getElementById('guardRegMessage').innerHTML = '<span style="color:red">Fill all fields</span>';
-        return;
-    }
-    
-    users.guards.push({ id: badge.toUpperCase(), name: name, password: password, role: 'guard', gate: gate, email: email });
-    document.getElementById('guardRegMessage').innerHTML = '<span style="color:green">✓ Guard registered!</span>';
-    document.getElementById('newGuardBadge').value = '';
-    document.getElementById('newGuardName').value = '';
-    document.getElementById('newGuardEmail').value = '';
-    document.getElementById('newGuardPassword').value = '';
-    renderGuardsTable();
-}
-
-// ========== RENDER FUNCTIONS ==========
+// ========== ADMIN FUNCTIONS ==========
 function loadAdminDashboard() {
     updateAdminStats();
     renderStudentsTable();
@@ -662,6 +537,95 @@ function showAdminTab(tab) {
     if (tab === 'alerts') renderPendingAlerts();
 }
 
+function registerStudent() {
+    const studentNumber = document.getElementById('newStudentNumber').value;
+    const name = document.getElementById('newStudentName').value;
+    const email = document.getElementById('newStudentEmail').value;
+    const password = document.getElementById('newStudentPassword').value;
+    const accessibility = document.getElementById('newAccessibility').value;
+    
+    if (!studentNumber || !name || !email || !password) {
+        document.getElementById('studentRegMessage').innerHTML = '<span style="color:red">Fill all fields</span>';
+        return;
+    }
+    
+    const newStudent = {
+        id: 'S' + String(users.students.length + 1).padStart(3, '0'),
+        student_number: parseInt(studentNumber),
+        name: name.toUpperCase(),
+        password: password,
+        email: email,
+        accessibility: accessibility,
+        is_active: true
+    };
+    users.students.push(newStudent);
+    
+    document.getElementById('studentRegMessage').innerHTML = '<span style="color:green">✓ Student registered!</span>';
+    document.getElementById('newStudentNumber').value = '';
+    document.getElementById('newStudentName').value = '';
+    document.getElementById('newStudentEmail').value = '';
+    document.getElementById('newStudentPassword').value = '';
+    renderStudentsTable();
+    populateStudentDropdown();
+    updateAdminStats();
+}
+
+function registerAsset() {
+    const barcodeId = document.getElementById('newAssetBarcode').value;
+    const assetType = document.getElementById('newAssetType').value;
+    const serialNumber = document.getElementById('newAssetSerial').value;
+    const studentId = document.getElementById('assetStudentId').value;
+    
+    if (!barcodeId || !studentId) {
+        document.getElementById('assetRegMessage').innerHTML = '<span style="color:red">Fill barcode and select student</span>';
+        return;
+    }
+    
+    const student = users.students.find(s => s.id === studentId);
+    if (!student) {
+        document.getElementById('assetRegMessage').innerHTML = '<span style="color:red">Invalid student</span>';
+        return;
+    }
+    
+    const newAsset = {
+        id: 'AST' + String(assets.length + 1).padStart(3, '0'),
+        barcode_id: barcodeId.toUpperCase(),
+        asset_type: assetType,
+        serial_number: serialNumber || 'N/A',
+        student_id: studentId,
+        student_name: student.name,
+        is_active: true
+    };
+    assets.push(newAsset);
+    
+    document.getElementById('assetRegMessage').innerHTML = `<span style="color:green">✓ Asset registered! Barcode: ${barcodeId.toUpperCase()}</span>`;
+    document.getElementById('newAssetBarcode').value = '';
+    document.getElementById('newAssetSerial').value = '';
+    renderAssetsTable();
+    updateAdminStats();
+}
+
+function registerGuard() {
+    const badge = document.getElementById('newGuardBadge').value;
+    const name = document.getElementById('newGuardName').value;
+    const email = document.getElementById('newGuardEmail').value;
+    const password = document.getElementById('newGuardPassword').value;
+    const gate = document.getElementById('newGuardGate').value;
+    
+    if (!badge || !name || !email || !password) {
+        document.getElementById('guardRegMessage').innerHTML = '<span style="color:red">Fill all fields</span>';
+        return;
+    }
+    
+    users.guards.push({ id: badge.toUpperCase(), name: name, password: password, role: 'guard', gate: gate, email: email });
+    document.getElementById('guardRegMessage').innerHTML = '<span style="color:green">✓ Guard registered!</span>';
+    document.getElementById('newGuardBadge').value = '';
+    document.getElementById('newGuardName').value = '';
+    document.getElementById('newGuardEmail').value = '';
+    document.getElementById('newGuardPassword').value = '';
+    renderGuardsTable();
+}
+
 function renderStudentsTable() {
     const container = document.getElementById('studentsTable');
     if (!container) return;
@@ -694,7 +658,7 @@ function renderAssetsTable() {
         const student = users.students.find(s => s.id === a.student_id);
         return `
             <div class="table-row">
-                <div><strong>${a.barcode_id}</strong><br><small>${assetIcons[a.asset_type]} ${a.asset_type}</small><br><small>Owner: ${student?.name || 'Unknown'}</small><br><span class="barcode-value">${a.barcode_id}</span></div>
+                <div><strong>${a.barcode_id}</strong><br><small>${assetIcons[a.asset_type]} ${a.asset_type}</small><br><small>Owner: ${student?.name || 'Unknown'}</small></div>
                 <button class="delete-btn" onclick="deleteAsset('${a.id}')">Delete</button>
             </div>
         `;
@@ -816,7 +780,7 @@ function exportAllLogs() {
     downloadCSV(csv, `spass_logs_${Date.now()}.csv`);
 }
 
-// ========== GUARD FUNCTIONS ==========
+// ========== GUARD FUNCTIONS (No History View) ==========
 function loadGuardDashboard() {
     updateGuardStats();
     renderGuardRecentScans();
@@ -837,7 +801,7 @@ function renderGuardRecentScans() {
     const recent = auditLogs.filter(l => l.guard_id === currentUser?.id).slice(0, 10);
     
     if (recent.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No recent scans</div>';
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No scans today</div>';
         return;
     }
     
@@ -895,18 +859,12 @@ function showResult(data) {
         html += `<div class="result-card"><div class="result-detail">Barcode: ${data.barcode}</div><div>${data.message}</div></div>`;
     }
     
-    if (data.requiresVoice && data.decision === 'AUTHORISED') {
-        html += `<div class="voice-badge">🎤 Voice Guidance: Exit permitted. Proceed through the gate.</div>`;
-    }
-    
     if (data.decision === 'FLAGGED') {
         html += `<div class="voice-badge">⚠️ Admin has been notified. Please wait for approval.</div>`;
     }
     
     html += `<button onclick="backToGuardDashboard()" class="btn-done">DONE</button>`;
-    if (data.decision === 'FLAGGED') {
-        html += `<button class="btn-alert" disabled style="opacity:0.6">⏳ Awaiting Admin Approval</button>`;
-    } else if (data.decision === 'DENIED') {
+    if (data.decision === 'DENIED') {
         html += `<button onclick="alertSupervisor()" class="btn-alert">⚠️ ALERT SUPERVISOR</button>`;
     }
     html += `</div>`;
@@ -921,55 +879,7 @@ function backToGuardDashboard() {
 }
 
 function alertSupervisor() {
-    speakText('Supervisor has been notified');
     alert('🚨 Supervisor has been notified of this security incident.');
-}
-
-function viewGuardHistory() {
-    renderGuardHistory();
-    showScreen('guardHistoryScreen');
-}
-
-function renderGuardHistory() {
-    const container = document.getElementById('guardHistoryList');
-    if (!container) return;
-    let filtered = auditLogs.filter(l => l.guard_id === currentUser?.id);
-    if (guardHistoryFilter !== 'ALL') filtered = filtered.filter(l => l.decision === guardHistoryFilter);
-    
-    if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-history">No scan events found.</div>';
-        return;
-    }
-    
-    container.innerHTML = filtered.map(log => `
-        <div class="history-item">
-            <div class="history-border ${log.decision === 'AUTHORISED' ? 'green' : (log.decision === 'FLAGGED' ? 'amber' : 'red')}"></div>
-            <div class="history-content">
-                <div class="history-student">${log.student_name || 'Unknown'}</div>
-                <div class="history-barcode">${log.barcode_id_scanned}</div>
-                <div class="history-time">${new Date(log.timestamp).toLocaleString()}</div>
-            </div>
-            <div class="history-chip chip-${log.decision.toLowerCase()}">${log.decision}</div>
-        </div>
-    `).join('');
-}
-
-function filterGuardHistory(filter) {
-    guardHistoryFilter = filter;
-    document.querySelectorAll('#guardHistoryScreen .filter-chip').forEach((c, i) => {
-        const filters = ['ALL', 'AUTHORISED', 'FLAGGED', 'DENIED'];
-        if (c) c.classList.toggle('active', filters[i] === filter);
-    });
-    renderGuardHistory();
-}
-
-function exportGuardLogs() {
-    let csv = 'Timestamp,Student Name,Barcode,Asset Type,Decision,Gate\n';
-    const filtered = auditLogs.filter(l => l.guard_id === currentUser?.id);
-    filtered.forEach(l => {
-        csv += `${l.timestamp},${l.student_name || 'Unknown'},${l.barcode_id_scanned},${l.asset_type || 'N/A'},${l.decision},${l.gate_id}\n`;
-    });
-    downloadCSV(csv, `guard_${currentUser?.id}_logs_${Date.now()}.csv`);
 }
 
 // ========== OFFLINE QUEUE ==========
