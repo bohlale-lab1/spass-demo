@@ -9,9 +9,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- ============================================================ -->
-        <!-- LOGIN SCREEN with Role Selection & Forgot Password -->
-        <!-- ============================================================ -->
+        <!-- ========== LOGIN SCREEN ========== -->
         <div id="loginScreen" class="screen active">
             <div class="login-wrapper">
                 <div class="logo-container">
@@ -21,7 +19,6 @@
                 </div>
                 
                 <div class="login-card">
-                    <!-- Role Selection -->
                     <div class="role-selector">
                         <button onclick="selectRole('guard')" id="roleGuardBtn" class="role-btn active">
                             <span class="role-icon">👮</span> Security Guard
@@ -32,9 +29,7 @@
                     </div>
                     
                     <div class="input-group">
-                        <label class="input-label">
-                            <span id="usernameLabel">Badge Number</span>
-                        </label>
+                        <label class="input-label" id="usernameLabel">Badge Number</label>
                         <input type="text" id="username" class="input" placeholder="Enter your badge number">
                     </div>
                     
@@ -58,9 +53,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- FORGOT PASSWORD SCREEN -->
-        <!-- ============================================================ -->
+        <!-- ========== FORGOT PASSWORD WITH GMAIL & PIN ========== -->
         <div id="forgotPasswordScreen" class="screen">
             <div class="login-wrapper">
                 <div class="logo-container">
@@ -69,20 +62,38 @@
                 </div>
                 
                 <div class="login-card">
-                    <div class="input-group">
-                        <label class="input-label">Username / Badge Number</label>
-                        <input type="text" id="resetUsername" class="input" placeholder="Enter your username">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">New Password</label>
-                        <input type="password" id="newPassword" class="input" placeholder="Enter new password">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Confirm New Password</label>
-                        <input type="password" id="confirmPassword" class="input" placeholder="Confirm new password">
+                    <div id="step1Container">
+                        <div class="input-group">
+                            <label class="input-label">Gmail Address</label>
+                            <input type="email" id="resetEmail" class="input" placeholder="yourname@gmail.com">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Username / Badge Number</label>
+                            <input type="text" id="resetUsername" class="input" placeholder="Enter your username">
+                        </div>
+                        <button onclick="sendResetPin()" class="btn-login">📧 SEND VERIFICATION PIN</button>
                     </div>
                     
-                    <button onclick="resetPassword()" class="btn-login">🔄 RESET PASSWORD</button>
+                    <div id="step2Container" style="display:none">
+                        <div class="input-group">
+                            <label class="input-label">Enter 6-Digit PIN</label>
+                            <input type="text" id="resetPin" class="input" placeholder="Enter PIN sent to your email" maxlength="6">
+                        </div>
+                        <button onclick="verifyPin()" class="btn-login">✓ VERIFY PIN</button>
+                    </div>
+                    
+                    <div id="step3Container" style="display:none">
+                        <div class="input-group">
+                            <label class="input-label">New Password</label>
+                            <input type="password" id="newPassword" class="input" placeholder="Enter new password">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="input" placeholder="Confirm new password">
+                        </div>
+                        <button onclick="updatePassword()" class="btn-login">🔄 UPDATE PASSWORD</button>
+                    </div>
+                    
                     <button onclick="backToLogin()" class="btn-secondary mt-2">← Back to Login</button>
                     
                     <div id="resetError" class="error-message" style="display:none"></div>
@@ -91,9 +102,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- ADMIN DASHBOARD - Complete Management -->
-        <!-- ============================================================ -->
+        <!-- ========== ADMIN DASHBOARD ========== -->
         <div id="adminScreen" class="screen">
             <div class="admin-header">
                 <div class="header-left">
@@ -106,7 +115,6 @@
                 </div>
             </div>
             
-            <!-- Admin Tabs -->
             <div class="admin-tabs">
                 <button onclick="showAdminTab('dashboard')" id="tabDashboard" class="tab-btn active">📊 Dashboard</button>
                 <button onclick="showAdminTab('students')" id="tabStudents" class="tab-btn">🎓 Students</button>
@@ -117,65 +125,40 @@
             </div>
             
             <div class="admin-content">
-                <!-- Dashboard Tab -->
                 <div id="adminDashboardTab" class="admin-tab active">
                     <div class="stats-grid">
-                        <div class="stat-card-large">
-                            <div class="stat-icon">🎓</div>
-                            <div class="stat-number" id="adminTotalStudents">0</div>
-                            <div class="stat-label">Total Students</div>
-                        </div>
-                        <div class="stat-card-large">
-                            <div class="stat-icon">📦</div>
-                            <div class="stat-number" id="adminTotalAssets">0</div>
-                            <div class="stat-label">Registered Assets</div>
-                        </div>
-                        <div class="stat-card-large">
-                            <div class="stat-icon">🔍</div>
-                            <div class="stat-number" id="adminTotalScans">0</div>
-                            <div class="stat-label">Total Scans</div>
-                        </div>
-                        <div class="stat-card-large">
-                            <div class="stat-icon">⚠️</div>
-                            <div class="stat-number" id="adminFlaggedScans">0</div>
-                            <div class="stat-label">Flagged Alerts</div>
-                        </div>
+                        <div class="stat-card-large"><div class="stat-icon">🎓</div><div class="stat-number" id="adminTotalStudents">0</div><div class="stat-label">Total Students</div></div>
+                        <div class="stat-card-large"><div class="stat-icon">📦</div><div class="stat-number" id="adminTotalAssets">0</div><div class="stat-label">Registered Assets</div></div>
+                        <div class="stat-card-large"><div class="stat-icon">🔍</div><div class="stat-number" id="adminTotalScans">0</div><div class="stat-label">Total Scans</div></div>
+                        <div class="stat-card-large"><div class="stat-icon">⚠️</div><div class="stat-number" id="adminFlaggedScans">0</div><div class="stat-label">Flagged Alerts</div></div>
                     </div>
-                    
-                    <div class="section-card">
-                        <div class="section-title">📈 Recent Activity</div>
-                        <div id="adminRecentActivity" class="activity-list"></div>
-                    </div>
+                    <div class="section-card"><div class="section-title">📈 Recent Activity</div><div id="adminRecentActivity" class="activity-list"></div></div>
                 </div>
                 
-                <!-- Students Management Tab -->
                 <div id="adminStudentsTab" class="admin-tab">
                     <div class="section-card">
                         <div class="section-title">➕ Register New Student</div>
                         <div class="form-row">
                             <input type="text" id="newStudentNumber" class="input-small" placeholder="Student Number">
                             <input type="text" id="newStudentName" class="input-small" placeholder="Full Name">
+                            <input type="email" id="newStudentEmail" class="input-small" placeholder="Gmail Address">
                             <input type="password" id="newStudentPassword" class="input-small" placeholder="Password">
                             <select id="newAccessibility" class="input-small">
                                 <option value="NONE">No Accessibility Needs</option>
-                                <option value="VISUAL_IMPAIRMENT">👁️ Visual Impairment</option>
+                                <option value="VISUAL_IMPAIRMENT">👁️ Visual Impairment (Voice Guidance)</option>
                                 <option value="MOBILITY_IMPAIRMENT">♿ Mobility Impairment</option>
                             </select>
                             <button onclick="registerStudent()" class="btn-secondary">➕ Register Student</button>
                         </div>
                         <div id="studentRegMessage" class="reg-message"></div>
                     </div>
-                    
                     <div class="section-card">
                         <div class="section-title">📋 All Registered Students</div>
-                        <div class="search-bar">
-                            <input type="text" id="studentSearch" class="input-small" placeholder="Search by name or number..." onkeyup="filterStudents()">
-                        </div>
+                        <input type="text" id="studentSearch" class="input-small" placeholder="Search by name or number..." onkeyup="filterStudents()">
                         <div id="studentsTable" class="data-table"></div>
                     </div>
                 </div>
                 
-                <!-- Assets Management Tab -->
                 <div id="adminAssetsTab" class="admin-tab">
                     <div class="section-card">
                         <div class="section-title">➕ Register New Asset & Link to Student</div>
@@ -183,8 +166,8 @@
                             <input type="text" id="newAssetBarcode" class="input-small" placeholder="Barcode ID (e.g., BAR001)">
                             <select id="newAssetType" class="input-small">
                                 <option value="LAPTOP">💻 Laptop</option>
-                                <option value="TABLET">📱 Tablet</option>
-                                <option value="PHONE">📞 Phone</option>
+                                <option value="FRIDGE">🧊 Fridge/Refrigerator</option>
+                                <option value="MICROWAVE">🍿 Microwave</option>
                                 <option value="OTHER">🔧 Other</option>
                             </select>
                             <input type="text" id="newAssetSerial" class="input-small" placeholder="Serial Number">
@@ -193,14 +176,12 @@
                         </div>
                         <div id="assetRegMessage" class="reg-message"></div>
                     </div>
-                    
                     <div class="section-card">
                         <div class="section-title">📦 All Assets</div>
                         <div id="assetsTable" class="data-table"></div>
                     </div>
                 </div>
                 
-                <!-- Scan Reports Tab (Guard Activity) -->
                 <div id="adminScansTab" class="admin-tab">
                     <div class="section-card">
                         <div class="section-title">👮 Guard Scan Reports</div>
@@ -211,13 +192,13 @@
                     </div>
                 </div>
                 
-                <!-- Guards Management Tab -->
                 <div id="adminGuardsTab" class="admin-tab">
                     <div class="section-card">
                         <div class="section-title">➕ Register New Guard</div>
                         <div class="form-row">
                             <input type="text" id="newGuardBadge" class="input-small" placeholder="Badge Number">
                             <input type="text" id="newGuardName" class="input-small" placeholder="Full Name">
+                            <input type="email" id="newGuardEmail" class="input-small" placeholder="Gmail Address">
                             <input type="password" id="newGuardPassword" class="input-small" placeholder="Password">
                             <select id="newGuardGate" class="input-small">
                                 <option value="GATE_1">Gate 1</option>
@@ -228,14 +209,12 @@
                         </div>
                         <div id="guardRegMessage" class="reg-message"></div>
                     </div>
-                    
                     <div class="section-card">
                         <div class="section-title">📋 Registered Guards</div>
                         <div id="guardsTable" class="data-table"></div>
                     </div>
                 </div>
                 
-                <!-- Exit Logs Tab -->
                 <div id="adminLogsTab" class="admin-tab">
                     <div class="section-card">
                         <div class="section-title">📋 All Exit Events (Immutable Audit Log)</div>
@@ -254,9 +233,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- GUARD DASHBOARD -->
-        <!-- ============================================================ -->
+        <!-- ========== GUARD DASHBOARD ========== -->
         <div id="guardScreen" class="screen">
             <div class="guard-header">
                 <div class="logo-small">🛡️ S-PASS Guard</div>
@@ -289,9 +266,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- SCAN SCREEN -->
-        <!-- ============================================================ -->
+        <!-- ========== SCAN SCREEN WITH REAL CAMERA ========== -->
         <div id="scanScreen" class="screen">
             <div class="scan-header">
                 <button onclick="cancelScan()" class="back-btn">← Back</button>
@@ -300,42 +275,36 @@
             </div>
             
             <div class="scanner-container">
-                <div class="scanner-frame">
-                    <div class="scan-line"></div>
-                    <div class="scan-corner tl"></div>
-                    <div class="scan-corner tr"></div>
-                    <div class="scan-corner bl"></div>
-                    <div class="scan-corner br"></div>
+                <!-- Real Camera Viewfinder -->
+                <div id="cameraPreview" class="camera-preview">
+                    <video id="video" class="camera-video" autoplay playsinline></video>
+                    <canvas id="canvas" style="display:none"></canvas>
+                    <div class="scan-overlay">
+                        <div class="scan-frame-real">
+                            <div class="scan-line-real"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="scan-instruction">Align barcode within the frame</div>
                 
+                <div class="scan-instruction">📷 Position barcode in the frame</div>
+                
+                <!-- Manual barcode input (fallback) -->
                 <div class="demo-barcode-input">
-                    <label class="input-label">Demo Barcode Scanner</label>
-                    <select id="demoBarcodeSelect" class="barcode-select">
-                        <option value="">-- Select a barcode to simulate scan --</option>
-                        <option value="BAR001">BAR001 - CN MALULEKE (Laptop) - Authorised</option>
-                        <option value="BAR002">BAR002 - BZ TWALA (Tablet) - Authorised + Voice</option>
-                        <option value="BAR003">BAR003 - TM SEKGOBELA (Laptop) - Authorised</option>
-                        <option value="BAR004">BAR004 - C SETE (Phone) - Authorised</option>
-                        <option value="BAR005">BAR005 - CB RAMOLOTO (Tablet) - Authorised</option>
-                        <option value="BAR999">BAR999 - Mismatch Asset - FLAGGED (Needs Verification)</option>
-                        <option value="UNKNOWN">UNKNOWN - Unregistered Asset - DENIED</option>
-                    </select>
-                    <button onclick="simulateScan()" class="btn-simulate">🔍 SIMULATE SCAN</button>
+                    <label class="input-label">Or Enter Barcode Manually:</label>
+                    <input type="text" id="manualBarcode" class="input" placeholder="Enter barcode number">
+                    <button onclick="manualScan()" class="btn-manual">✓ VERIFY MANUALLY</button>
                 </div>
+                
+                <button onclick="cancelScan()" class="btn-cancel-scan">Cancel Scan</button>
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- SCAN RESULT SCREEN (Green/Amber/Red) -->
-        <!-- ============================================================ -->
+        <!-- ========== RESULT SCREEN ========== -->
         <div id="resultScreen" class="screen">
             <div id="resultContainer" class="result-container"></div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- GUARD HISTORY SCREEN -->
-        <!-- ============================================================ -->
+        <!-- ========== GUARD HISTORY SCREEN ========== -->
         <div id="guardHistoryScreen" class="screen">
             <div class="history-header">
                 <button onclick="backToGuardDashboard()" class="back-btn">← Back</button>
