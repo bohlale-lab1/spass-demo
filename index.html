@@ -2,108 +2,355 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>S-PASS | UL Safe-Pass Asset Security System</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
-        <!-- Login Screen (Function 2) -->
+        <!-- ============================================================ -->
+        <!-- LOGIN SCREEN with Role Selection & Forgot Password -->
+        <!-- ============================================================ -->
         <div id="loginScreen" class="screen active">
-            <div class="login-card">
-                <div class="logo">S-PASS</div>
-                <div class="tagline">Secure. Smart. Inclusive.</div>
+            <div class="login-wrapper">
+                <div class="logo-container">
+                    <div class="shield-icon">🛡️</div>
+                    <div class="logo-text">S-PASS</div>
+                    <div class="logo-sub">Secure. Smart. Inclusive.</div>
+                </div>
                 
-                <input type="text" id="badgeNumber" class="input" placeholder="Guard Badge Number">
-                <input type="password" id="password" class="input" placeholder="Password">
+                <div class="login-card">
+                    <!-- Role Selection -->
+                    <div class="role-selector">
+                        <button onclick="selectRole('guard')" id="roleGuardBtn" class="role-btn active">
+                            <span class="role-icon">👮</span> Security Guard
+                        </button>
+                        <button onclick="selectRole('admin')" id="roleAdminBtn" class="role-btn">
+                            <span class="role-icon">👑</span> Administrator
+                        </button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span id="usernameLabel">Badge Number</span>
+                        </label>
+                        <input type="text" id="username" class="input" placeholder="Enter your badge number">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" id="password" class="input" placeholder="Enter your password">
+                    </div>
+                    
+                    <button onclick="handleLogin()" class="btn-login">🔐 LOGIN TO SYSTEM</button>
+                    
+                    <div class="login-footer">
+                        <a href="#" onclick="showForgotPassword()" class="forgot-link">Forgot Password?</a>
+                    </div>
+                    
+                    <div id="loginError" class="error-message" style="display:none"></div>
+                </div>
                 
-                <button onclick="handleLogin()" class="btn-primary">LOGIN</button>
-                <div class="demo-hint">Demo credentials: G001 / 1234 or G002 / 1234</div>
+                <div class="security-badge">
+                    <span>🔒 POPI Act Compliant</span> | <span>⚡ 24/7 Security Monitoring</span>
+                </div>
             </div>
-            <div class="footer">University of Limpopo — S-PASS v1.0</div>
         </div>
 
-        <!-- Home/Dashboard Screen -->
-        <div id="homeScreen" class="screen">
-            <div class="top-bar">
-                <div class="logo-small">S-PASS</div>
-                <button onclick="handleLogout()" class="logout-btn">Logout</button>
-            </div>
-            
-            <div class="welcome-banner">
-                <div class="welcome-text" id="guardNameDisplay">Welcome, John Doe</div>
-                <div class="gate-text">Gate: GATE_1 | Shift: 06:00–14:00</div>
-            </div>
-            
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-number" id="scanCount">0</div>
-                    <div class="stat-label">Scans Today</div>
+        <!-- ============================================================ -->
+        <!-- FORGOT PASSWORD SCREEN -->
+        <!-- ============================================================ -->
+        <div id="forgotPasswordScreen" class="screen">
+            <div class="login-wrapper">
+                <div class="logo-container">
+                    <div class="shield-icon">🔐</div>
+                    <div class="logo-text">Reset Password</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number green" id="authCount">0</div>
-                    <div class="stat-label">Authorised</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number amber" id="flaggedCount">0</div>
-                    <div class="stat-label">Flagged</div>
+                
+                <div class="login-card">
+                    <div class="input-group">
+                        <label class="input-label">Username / Badge Number</label>
+                        <input type="text" id="resetUsername" class="input" placeholder="Enter your username">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">New Password</label>
+                        <input type="password" id="newPassword" class="input" placeholder="Enter new password">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="input" placeholder="Confirm new password">
+                    </div>
+                    
+                    <button onclick="resetPassword()" class="btn-login">🔄 RESET PASSWORD</button>
+                    <button onclick="backToLogin()" class="btn-secondary mt-2">← Back to Login</button>
+                    
+                    <div id="resetError" class="error-message" style="display:none"></div>
+                    <div id="resetSuccess" class="success-message" style="display:none"></div>
                 </div>
             </div>
-            
-            <button onclick="startScan()" class="btn-scan">📷 SCAN ASSET</button>
-            
-            <div id="offlineQueueBanner" class="offline-banner" style="display:none">
-                <button onclick="syncOfflineQueue()" class="btn-sync">📤 Sync Offline Scans (<span id="queueSize">0</span>)</button>
-            </div>
-            
-            <button onclick="viewHistory()" class="btn-history">📋 VIEW RECENT SCANS</button>
         </div>
 
-        <!-- Scan Screen (Function 1 & 4) -->
+        <!-- ============================================================ -->
+        <!-- ADMIN DASHBOARD - Complete Management -->
+        <!-- ============================================================ -->
+        <div id="adminScreen" class="screen">
+            <div class="admin-header">
+                <div class="header-left">
+                    <div class="logo-small">🛡️ S-PASS Admin</div>
+                    <span class="admin-badge">Administrator</span>
+                </div>
+                <div class="header-right">
+                    <span id="adminNameDisplay" class="admin-name"></span>
+                    <button onclick="handleLogout()" class="logout-icon">🚪</button>
+                </div>
+            </div>
+            
+            <!-- Admin Tabs -->
+            <div class="admin-tabs">
+                <button onclick="showAdminTab('dashboard')" id="tabDashboard" class="tab-btn active">📊 Dashboard</button>
+                <button onclick="showAdminTab('students')" id="tabStudents" class="tab-btn">🎓 Students</button>
+                <button onclick="showAdminTab('assets')" id="tabAssets" class="tab-btn">📦 Assets</button>
+                <button onclick="showAdminTab('scans')" id="tabScans" class="tab-btn">🔍 Scan Reports</button>
+                <button onclick="showAdminTab('guards')" id="tabGuards" class="tab-btn">👮 Guards</button>
+                <button onclick="showAdminTab('logs')" id="tabLogs" class="tab-btn">📋 Exit Logs</button>
+            </div>
+            
+            <div class="admin-content">
+                <!-- Dashboard Tab -->
+                <div id="adminDashboardTab" class="admin-tab active">
+                    <div class="stats-grid">
+                        <div class="stat-card-large">
+                            <div class="stat-icon">🎓</div>
+                            <div class="stat-number" id="adminTotalStudents">0</div>
+                            <div class="stat-label">Total Students</div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon">📦</div>
+                            <div class="stat-number" id="adminTotalAssets">0</div>
+                            <div class="stat-label">Registered Assets</div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon">🔍</div>
+                            <div class="stat-number" id="adminTotalScans">0</div>
+                            <div class="stat-label">Total Scans</div>
+                        </div>
+                        <div class="stat-card-large">
+                            <div class="stat-icon">⚠️</div>
+                            <div class="stat-number" id="adminFlaggedScans">0</div>
+                            <div class="stat-label">Flagged Alerts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-card">
+                        <div class="section-title">📈 Recent Activity</div>
+                        <div id="adminRecentActivity" class="activity-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Students Management Tab -->
+                <div id="adminStudentsTab" class="admin-tab">
+                    <div class="section-card">
+                        <div class="section-title">➕ Register New Student</div>
+                        <div class="form-row">
+                            <input type="text" id="newStudentNumber" class="input-small" placeholder="Student Number">
+                            <input type="text" id="newStudentName" class="input-small" placeholder="Full Name">
+                            <input type="password" id="newStudentPassword" class="input-small" placeholder="Password">
+                            <select id="newAccessibility" class="input-small">
+                                <option value="NONE">No Accessibility Needs</option>
+                                <option value="VISUAL_IMPAIRMENT">👁️ Visual Impairment</option>
+                                <option value="MOBILITY_IMPAIRMENT">♿ Mobility Impairment</option>
+                            </select>
+                            <button onclick="registerStudent()" class="btn-secondary">➕ Register Student</button>
+                        </div>
+                        <div id="studentRegMessage" class="reg-message"></div>
+                    </div>
+                    
+                    <div class="section-card">
+                        <div class="section-title">📋 All Registered Students</div>
+                        <div class="search-bar">
+                            <input type="text" id="studentSearch" class="input-small" placeholder="Search by name or number..." onkeyup="filterStudents()">
+                        </div>
+                        <div id="studentsTable" class="data-table"></div>
+                    </div>
+                </div>
+                
+                <!-- Assets Management Tab -->
+                <div id="adminAssetsTab" class="admin-tab">
+                    <div class="section-card">
+                        <div class="section-title">➕ Register New Asset & Link to Student</div>
+                        <div class="form-row">
+                            <input type="text" id="newAssetBarcode" class="input-small" placeholder="Barcode ID (e.g., BAR001)">
+                            <select id="newAssetType" class="input-small">
+                                <option value="LAPTOP">💻 Laptop</option>
+                                <option value="TABLET">📱 Tablet</option>
+                                <option value="PHONE">📞 Phone</option>
+                                <option value="OTHER">🔧 Other</option>
+                            </select>
+                            <input type="text" id="newAssetSerial" class="input-small" placeholder="Serial Number">
+                            <select id="assetStudentId" class="input-small"></select>
+                            <button onclick="registerAsset()" class="btn-secondary">➕ Register Asset</button>
+                        </div>
+                        <div id="assetRegMessage" class="reg-message"></div>
+                    </div>
+                    
+                    <div class="section-card">
+                        <div class="section-title">📦 All Assets</div>
+                        <div id="assetsTable" class="data-table"></div>
+                    </div>
+                </div>
+                
+                <!-- Scan Reports Tab (Guard Activity) -->
+                <div id="adminScansTab" class="admin-tab">
+                    <div class="section-card">
+                        <div class="section-title">👮 Guard Scan Reports</div>
+                        <select id="guardFilter" class="input-small" onchange="filterScansByGuard()">
+                            <option value="ALL">All Guards</option>
+                        </select>
+                        <div id="guardReportsTable" class="data-table"></div>
+                    </div>
+                </div>
+                
+                <!-- Guards Management Tab -->
+                <div id="adminGuardsTab" class="admin-tab">
+                    <div class="section-card">
+                        <div class="section-title">➕ Register New Guard</div>
+                        <div class="form-row">
+                            <input type="text" id="newGuardBadge" class="input-small" placeholder="Badge Number">
+                            <input type="text" id="newGuardName" class="input-small" placeholder="Full Name">
+                            <input type="password" id="newGuardPassword" class="input-small" placeholder="Password">
+                            <select id="newGuardGate" class="input-small">
+                                <option value="GATE_1">Gate 1</option>
+                                <option value="GATE_2">Gate 2</option>
+                                <option value="GATE_3">Gate 3</option>
+                            </select>
+                            <button onclick="registerGuard()" class="btn-secondary">➕ Register Guard</button>
+                        </div>
+                        <div id="guardRegMessage" class="reg-message"></div>
+                    </div>
+                    
+                    <div class="section-card">
+                        <div class="section-title">📋 Registered Guards</div>
+                        <div id="guardsTable" class="data-table"></div>
+                    </div>
+                </div>
+                
+                <!-- Exit Logs Tab -->
+                <div id="adminLogsTab" class="admin-tab">
+                    <div class="section-card">
+                        <div class="section-title">📋 All Exit Events (Immutable Audit Log)</div>
+                        <div class="filter-row">
+                            <select id="logFilter" class="input-small" onchange="filterLogs()">
+                                <option value="ALL">All Decisions</option>
+                                <option value="AUTHORISED">Authorised Only</option>
+                                <option value="FLAGGED">Flagged Only</option>
+                                <option value="DENIED">Denied Only</option>
+                            </select>
+                            <button onclick="exportAllLogs()" class="btn-export">📎 Export CSV</button>
+                        </div>
+                        <div id="logsTable" class="data-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- GUARD DASHBOARD -->
+        <!-- ============================================================ -->
+        <div id="guardScreen" class="screen">
+            <div class="guard-header">
+                <div class="logo-small">🛡️ S-PASS Guard</div>
+                <div class="header-right">
+                    <span id="guardNameDisplay" class="guard-name"></span>
+                    <span id="gateDisplay" class="gate-badge"></span>
+                    <button onclick="handleLogout()" class="logout-icon">🚪</button>
+                </div>
+            </div>
+            
+            <div class="guard-dashboard">
+                <div class="stats-row">
+                    <div class="stat-card"><div class="stat-number" id="guardScanCount">0</div><div class="stat-label">Today's Scans</div></div>
+                    <div class="stat-card"><div class="stat-number green" id="guardAuthCount">0</div><div class="stat-label">Authorised</div></div>
+                    <div class="stat-card"><div class="stat-number amber" id="guardFlaggedCount">0</div><div class="stat-label">Flagged</div></div>
+                    <div class="stat-card"><div class="stat-number red" id="guardDeniedCount">0</div><div class="stat-label">Denied</div></div>
+                </div>
+                
+                <button onclick="startScan()" class="btn-scan-large">📷 SCAN ASSET BARCODE</button>
+                
+                <div id="offlineQueueBanner" class="offline-banner" style="display:none">
+                    <button onclick="syncOfflineQueue()" class="btn-sync">📤 Sync Offline Scans (<span id="queueSize">0</span>)</button>
+                </div>
+                
+                <div class="section-card">
+                    <div class="section-title">📋 Recent Scan Activity</div>
+                    <div id="guardRecentScans" class="scan-list"></div>
+                    <button onclick="viewGuardHistory()" class="btn-history">VIEW FULL HISTORY</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SCAN SCREEN -->
+        <!-- ============================================================ -->
         <div id="scanScreen" class="screen">
+            <div class="scan-header">
+                <button onclick="cancelScan()" class="back-btn">← Back</button>
+                <div class="scan-title">Scan Asset Barcode</div>
+                <div></div>
+            </div>
+            
             <div class="scanner-container">
                 <div class="scanner-frame">
                     <div class="scan-line"></div>
+                    <div class="scan-corner tl"></div>
+                    <div class="scan-corner tr"></div>
+                    <div class="scan-corner bl"></div>
+                    <div class="scan-corner br"></div>
                 </div>
                 <div class="scan-instruction">Align barcode within the frame</div>
                 
                 <div class="demo-barcode-input">
+                    <label class="input-label">Demo Barcode Scanner</label>
                     <select id="demoBarcodeSelect" class="barcode-select">
-                        <option value="">Select a barcode to scan...</option>
-                        <option value="BAR001">BAR001 - CN MALULEKE (Authorised - Green)</option>
-                        <option value="BAR002">BAR002 - BZ TWALA (Voice Guidance Demo)</option>
-                        <option value="BAR003">BAR003 - TM SEKGOBELA (Authorised - Green)</option>
-                        <option value="BAR999">BAR999 - Mismatch Asset (Flagged - Amber)</option>
-                        <option value="UNKNOWN">UNKNOWN - Unregistered (Denied - Red)</option>
+                        <option value="">-- Select a barcode to simulate scan --</option>
+                        <option value="BAR001">BAR001 - CN MALULEKE (Laptop) - Authorised</option>
+                        <option value="BAR002">BAR002 - BZ TWALA (Tablet) - Authorised + Voice</option>
+                        <option value="BAR003">BAR003 - TM SEKGOBELA (Laptop) - Authorised</option>
+                        <option value="BAR004">BAR004 - C SETE (Phone) - Authorised</option>
+                        <option value="BAR005">BAR005 - CB RAMOLOTO (Tablet) - Authorised</option>
+                        <option value="BAR999">BAR999 - Mismatch Asset - FLAGGED (Needs Verification)</option>
+                        <option value="UNKNOWN">UNKNOWN - Unregistered Asset - DENIED</option>
                     </select>
-                    <button onclick="simulateScan()" class="btn-simulate">Simulate Scan</button>
+                    <button onclick="simulateScan()" class="btn-simulate">🔍 SIMULATE SCAN</button>
                 </div>
-                
-                <button onclick="cancelScan()" class="btn-cancel">Cancel</button>
             </div>
         </div>
 
-        <!-- Result Screen (Function 4) -->
+        <!-- ============================================================ -->
+        <!-- SCAN RESULT SCREEN (Green/Amber/Red) -->
+        <!-- ============================================================ -->
         <div id="resultScreen" class="screen">
             <div id="resultContainer" class="result-container"></div>
         </div>
 
-        <!-- History Screen (Function 3) -->
-        <div id="historyScreen" class="screen">
+        <!-- ============================================================ -->
+        <!-- GUARD HISTORY SCREEN -->
+        <!-- ============================================================ -->
+        <div id="guardHistoryScreen" class="screen">
             <div class="history-header">
-                <button onclick="goHome()" class="back-btn">←</button>
+                <button onclick="backToGuardDashboard()" class="back-btn">← Back</button>
                 <div class="history-title">Scan History</div>
-                <button onclick="exportLogs()" class="export-btn">📎</button>
+                <button onclick="exportGuardLogs()" class="export-btn">📎 Export</button>
             </div>
-            
-            <div id="historyList" class="history-list"></div>
             
             <div class="filter-bar">
-                <button onclick="filterHistory('ALL')" class="filter-chip active">All</button>
-                <button onclick="filterHistory('AUTHORISED')" class="filter-chip">Authorised</button>
-                <button onclick="filterHistory('FLAGGED')" class="filter-chip">Flagged</button>
-                <button onclick="filterHistory('DENIED')" class="filter-chip">Denied</button>
+                <button onclick="filterGuardHistory('ALL')" class="filter-chip active">All</button>
+                <button onclick="filterGuardHistory('AUTHORISED')" class="filter-chip">✅ Authorised</button>
+                <button onclick="filterGuardHistory('FLAGGED')" class="filter-chip">⚠️ Flagged</button>
+                <button onclick="filterGuardHistory('DENIED')" class="filter-chip">❌ Denied</button>
             </div>
+            
+            <div id="guardHistoryList" class="history-list"></div>
         </div>
     </div>
 
