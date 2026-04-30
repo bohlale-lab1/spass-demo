@@ -657,3 +657,9 @@ body {
 
 .back-btn {
     background: transparent;
+    boarder: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.mt-2 { margin-top: 12px; }
