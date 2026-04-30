@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-PASS | UL Safe-Pass Asset Security System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Login Screen (Function 2) -->
+        <div id="loginScreen" class="screen active">
+            <div class="login-card">
+                <div class="logo">S-PASS</div>
+                <div class="tagline">Secure. Smart. Inclusive.</div>
+                
+                <input type="text" id="badgeNumber" class="input" placeholder="Guard Badge Number">
+                <input type="password" id="password" class="input" placeholder="Password">
+                
+                <button onclick="handleLogin()" class="btn-primary">LOGIN</button>
+                <div class="demo-hint">Demo credentials: G001 / 1234 or G002 / 1234</div>
+            </div>
+            <div class="footer">University of Limpopo — S-PASS v1.0</div>
+        </div>
+
+        <!-- Home/Dashboard Screen -->
+        <div id="homeScreen" class="screen">
+            <div class="top-bar">
+                <div class="logo-small">S-PASS</div>
+                <button onclick="handleLogout()" class="logout-btn">Logout</button>
+            </div>
+            
+            <div class="welcome-banner">
+                <div class="welcome-text" id="guardNameDisplay">Welcome, John Doe</div>
+                <div class="gate-text">Gate: GATE_1 | Shift: 06:00–14:00</div>
+            </div>
+            
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="scanCount">0</div>
+                    <div class="stat-label">Scans Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number green" id="authCount">0</div>
+                    <div class="stat-label">Authorised</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number amber" id="flaggedCount">0</div>
+                    <div class="stat-label">Flagged</div>
+                </div>
+            </div>
+            
+            <button onclick="startScan()" class="btn-scan">📷 SCAN ASSET</button>
+            
+            <div id="offlineQueueBanner" class="offline-banner" style="display:none">
+                <button onclick="syncOfflineQueue()" class="btn-sync">📤 Sync Offline Scans (<span id="queueSize">0</span>)</button>
+            </div>
+            
+            <button onclick="viewHistory()" class="btn-history">📋 VIEW RECENT SCANS</button>
+        </div>
+
+        <!-- Scan Screen (Function 1 & 4) -->
+        <div id="scanScreen" class="screen">
+            <div class="scanner-container">
+                <div class="scanner-frame">
+                    <div class="scan-line"></div>
+                </div>
+                <div class="scan-instruction">Align barcode within the frame</div>
+                
+                <div class="demo-barcode-input">
+                    <select id="demoBarcodeSelect" class="barcode-select">
+                        <option value="">Select a barcode to scan...</option>
+                        <option value="BAR001">BAR001 - CN MALULEKE (Authorised - Green)</option>
+                        <option value="BAR002">BAR002 - BZ TWALA (Voice Guidance Demo)</option>
+                        <option value="BAR003">BAR003 - TM SEKGOBELA (Authorised - Green)</option>
+                        <option value="BAR999">BAR999 - Mismatch Asset (Flagged - Amber)</option>
+                        <option value="UNKNOWN">UNKNOWN - Unregistered (Denied - Red)</option>
+                    </select>
+                    <button onclick="simulateScan()" class="btn-simulate">Simulate Scan</button>
+                </div>
+                
+                <button onclick="cancelScan()" class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Result Screen (Function 4) -->
+        <div id="resultScreen" class="screen">
+            <div id="resultContainer" class="result-container"></div>
+        </div>
+
+        <!-- History Screen (Function 3) -->
+        <div id="historyScreen" class="screen">
+            <div class="history-header">
+                <button onclick="goHome()" class="back-btn">←</button>
+                <div class="history-title">Scan History</div>
+                <button onclick="exportLogs()" class="export-btn">📎</button>
+            </div>
+            
+            <div id="historyList" class="history-list"></div>
+            
+            <div class="filter-bar">
+                <button onclick="filterHistory('ALL')" class="filter-chip active">All</button>
+                <button onclick="filterHistory('AUTHORISED')" class="filter-chip">Authorised</button>
+                <button onclick="filterHistory('FLAGGED')" class="filter-chip">Flagged</button>
+                <button onclick="filterHistory('DENIED')" class="filter-chip">Denied</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
