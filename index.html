@@ -6,6 +6,8 @@
     <title>S-PASS | UL Safe-Pass Asset Security System</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -53,7 +55,7 @@
             </div>
         </div>
 
-        <!-- ========== FORGOT PASSWORD WITH GMAIL & PIN ========== -->
+        <!-- ========== FORGOT PASSWORD WITH REAL EMAIL ========== -->
         <div id="forgotPasswordScreen" class="screen">
             <div class="login-wrapper">
                 <div class="logo-container">
@@ -115,10 +117,16 @@
                 </div>
             </div>
             
+            <!-- Alert Notification Badge -->
+            <div id="alertBadge" class="alert-badge" style="display:none" onclick="showAdminTab('alerts')">
+                🔔 <span id="alertCount">0</span> Pending Verifications
+            </div>
+            
             <div class="admin-tabs">
                 <button onclick="showAdminTab('dashboard')" id="tabDashboard" class="tab-btn active">📊 Dashboard</button>
                 <button onclick="showAdminTab('students')" id="tabStudents" class="tab-btn">🎓 Students</button>
                 <button onclick="showAdminTab('assets')" id="tabAssets" class="tab-btn">📦 Assets</button>
+                <button onclick="showAdminTab('alerts')" id="tabAlerts" class="tab-btn">⚠️ Pending Alerts</button>
                 <button onclick="showAdminTab('scans')" id="tabScans" class="tab-btn">🔍 Scan Reports</button>
                 <button onclick="showAdminTab('guards')" id="tabGuards" class="tab-btn">👮 Guards</button>
                 <button onclick="showAdminTab('logs')" id="tabLogs" class="tab-btn">📋 Exit Logs</button>
@@ -146,7 +154,6 @@
                             <select id="newAccessibility" class="input-small">
                                 <option value="NONE">No Accessibility Needs</option>
                                 <option value="VISUAL_IMPAIRMENT">👁️ Visual Impairment (Voice Guidance)</option>
-                                <option value="MOBILITY_IMPAIRMENT">♿ Mobility Impairment</option>
                             </select>
                             <button onclick="registerStudent()" class="btn-secondary">➕ Register Student</button>
                         </div>
@@ -154,31 +161,37 @@
                     </div>
                     <div class="section-card">
                         <div class="section-title">📋 All Registered Students</div>
-                        <input type="text" id="studentSearch" class="input-small" placeholder="Search by name or number..." onkeyup="filterStudents()">
+                        <input type="text" id="studentSearch" class="input-small" placeholder="Search..." onkeyup="filterStudents()">
                         <div id="studentsTable" class="data-table"></div>
                     </div>
                 </div>
                 
                 <div id="adminAssetsTab" class="admin-tab">
                     <div class="section-card">
-                        <div class="section-title">➕ Register New Asset & Link to Student</div>
+                        <div class="section-title">➕ Register New Asset (Auto-generates Barcode)</div>
                         <div class="form-row">
-                            <input type="text" id="newAssetBarcode" class="input-small" placeholder="Barcode ID (e.g., BAR001)">
                             <select id="newAssetType" class="input-small">
                                 <option value="LAPTOP">💻 Laptop</option>
-                                <option value="FRIDGE">🧊 Fridge/Refrigerator</option>
+                                <option value="FRIDGE">🧊 Fridge</option>
                                 <option value="MICROWAVE">🍿 Microwave</option>
                                 <option value="OTHER">🔧 Other</option>
                             </select>
                             <input type="text" id="newAssetSerial" class="input-small" placeholder="Serial Number">
                             <select id="assetStudentId" class="input-small"></select>
-                            <button onclick="registerAsset()" class="btn-secondary">➕ Register Asset</button>
+                            <button onclick="registerAssetWithBarcode()" class="btn-secondary">➕ Generate Barcode & Register</button>
                         </div>
                         <div id="assetRegMessage" class="reg-message"></div>
                     </div>
                     <div class="section-card">
-                        <div class="section-title">📦 All Assets</div>
+                        <div class="section-title">📦 All Assets (with unique barcodes)</div>
                         <div id="assetsTable" class="data-table"></div>
+                    </div>
+                </div>
+                
+                <div id="adminAlertsTab" class="admin-tab">
+                    <div class="section-card">
+                        <div class="section-title">⚠️ Pending Verification Requests</div>
+                        <div id="pendingAlertsList" class="alerts-list"></div>
                     </div>
                 </div>
                 
@@ -266,7 +279,7 @@
             </div>
         </div>
 
-        <!-- ========== SCAN SCREEN WITH REAL CAMERA ========== -->
+        <!-- ========== SCAN SCREEN WITH REAL BARCODE SCANNER ========== -->
         <div id="scanScreen" class="screen">
             <div class="scan-header">
                 <button onclick="cancelScan()" class="back-btn">← Back</button>
@@ -275,7 +288,6 @@
             </div>
             
             <div class="scanner-container">
-                <!-- Real Camera Viewfinder -->
                 <div id="cameraPreview" class="camera-preview">
                     <video id="video" class="camera-video" autoplay playsinline></video>
                     <canvas id="canvas" style="display:none"></canvas>
@@ -287,11 +299,11 @@
                 </div>
                 
                 <div class="scan-instruction">📷 Position barcode in the frame</div>
+                <div id="scanStatus" class="scan-status">Waiting for barcode...</div>
                 
-                <!-- Manual barcode input (fallback) -->
-                <div class="demo-barcode-input">
-                    <label class="input-label">Or Enter Barcode Manually:</label>
-                    <input type="text" id="manualBarcode" class="input" placeholder="Enter barcode number">
+                <div class="manual-fallback">
+                    <div class="divider">OR</div>
+                    <input type="text" id="manualBarcode" class="input" placeholder="Enter barcode manually">
                     <button onclick="manualScan()" class="btn-manual">✓ VERIFY MANUALLY</button>
                 </div>
                 
