@@ -24,7 +24,7 @@ let users = {
         { id: 'G002', name: 'Jane Smith', password: '1234', role: 'guard', gate: 'GATE_2', email: 'your_email@gmail.com' }
     ],
     admins: [
-        { id: 'A001', name: 'Admin User', password: '1234', role: 'admin', email: 'your_email@gmail.com' }
+        { id: 'A001', name: 'Admin User', password: '1234', role: 'admin', email: 'bohlaleramoloto@gmail.com' }
     ],
     students: [
         { id: 'S001', student_number: 202394726, name: 'CN MALULEKE', password: '1234', accessibility: 'NONE', is_active: true, email: 'your_email@gmail.com' },
