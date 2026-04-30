@@ -1,85 +1,556 @@
-let currentGuard = null;
+// ========== DATABASE / STORAGE ==========
+let currentUser = null;
+let currentRole = null;
 let auditLogs = [];
 let offlineQueue = [];
-let currentFilter = 'ALL';
+let guardHistoryFilter = 'ALL';
 
-const demoGuards = {
-    'G001': { name: 'John Doe', password: '1234' },
-    'G002': { name: 'Jane Smith', password: '1234' }
+// Demo Users (Guards, Admins, Students)
+let users = {
+    guards: [
+        { id: 'G001', name: 'John Doe', password: '1234', role: 'guard', gate: 'GATE_1' },
+        { id: 'G002', name: 'Jane Smith', password: '1234', role: 'guard', gate: 'GATE_2' }
+    ],
+    admins: [
+        { id: 'A001', name: 'Admin User', password: '1234', role: 'admin' }
+    ],
+    students: [
+        { id: 'S001', student_number: 202394726, name: 'CN MALULEKE', password: '1234', accessibility: 'NONE', is_active: true },
+        { id: 'S002', student_number: 202393020, name: 'BZ TWALA', password: '1234', accessibility: 'VISUAL_IMPAIRMENT', is_active: true },
+        { id: 'S003', student_number: 240015914, name: 'TM SEKGOBELA', password: '1234', accessibility: 'NONE', is_active: true },
+        { id: 'S004', student_number: 202247479, name: 'C SETE', password: '1234', accessibility: 'NONE', is_active: true },
+        { id: 'S005', student_number: 240000760, name: 'CB RAMOLOTO', password: '1234', accessibility: 'NONE', is_active: true }
+    ]
 };
 
-const assets = {
-    'BAR001': { student_id: 'STU001', student_name: 'CN MALULEKE', student_number: 202394726, asset_type: 'LAPTOP', status: 'MATCH' },
-    'BAR002': { student_id: 'STU002', student_name: 'BZ TWALA', student_number: 202393020, asset_type: 'TABLET', status: 'MATCH', voice_guidance: true },
-    'BAR003': { student_id: 'STU003', student_name: 'TM SEKGOBELA', student_number: 240015914, asset_type: 'LAPTOP', status: 'MATCH' },
-    'BAR999': { student_id: 'STU001', student_name: 'CN MALULEKE', student_number: 202394726, asset_type: 'LAPTOP', status: 'MISMATCH' }
-};
+// Assets linked to students
+let assets = [
+    { id: 'AST001', barcode_id: 'BAR001', asset_type: 'LAPTOP', serial_number: 'SN001', student_id: 'S001', is_active: true },
+    { id: 'AST002', barcode_id: 'BAR002', asset_type: 'TABLET', serial_number: 'SN002', student_id: 'S002', is_active: true },
+    { id: 'AST003', barcode_id: 'BAR003', asset_type: 'LAPTOP', serial_number: 'SN003', student_id: 'S003', is_active: true },
+    { id: 'AST004', barcode_id: 'BAR004', asset_type: 'PHONE', serial_number: 'SN004', student_id: 'S004', is_active: true },
+    { id: 'AST005', barcode_id: 'BAR005', asset_type: 'TABLET', serial_number: 'SN005', student_id: 'S005', is_active: true }
+];
 
-const students = {
-    'STU001': { name: 'CN MALULEKE', number: 202394726 },
-    'STU002': { name: 'BZ TWALA', number: 202393020, accessibility: 'VISUAL_IMPAIRMENT' },
-    'STU003': { name: 'TM SEKGOBELA', number: 240015914 }
-};
+let selectedRole = 'guard';
 
-function handleLogin() {
-    const badgeNumber = document.getElementById('badgeNumber').value;
-    const password = document.getElementById('password').value;
-    const guard = demoGuards[badgeNumber];
+// ========== ROLE SELECTION ==========
+function selectRole(role) {
+    selectedRole = role;
+    document.getElementById('roleGuardBtn').classList.toggle('active', role === 'guard');
+    document.getElementById('roleAdminBtn').classList.toggle('active', role === 'admin');
     
-    if (guard && guard.password === password) {
-        currentGuard = { id: badgeNumber, name: guard.name };
-        document.getElementById('guardNameDisplay').innerHTML = `Welcome, ${guard.name}`;
-        showScreen('homeScreen');
-        updateStats();
+    const usernameLabel = document.getElementById('usernameLabel');
+    if (role === 'guard') {
+        usernameLabel.textContent = 'Badge Number';
+        document.getElementById('username').placeholder = 'Enter your badge number (e.g., G001)';
     } else {
-        alert('Invalid credentials. Try G001/1234');
+        usernameLabel.textContent = 'Admin Username';
+        document.getElementById('username').placeholder = 'Enter admin username (e.g., A001)';
     }
 }
 
-function handleLogout() {
-    currentGuard = null;
+// ========== LOGIN ==========
+function handleLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errorDiv = document.getElementById('loginError');
+    
+    if (selectedRole === 'guard') {
+        const guard = users.guards.find(g => g.id === username && g.password === password);
+        if (guard) {
+            currentUser = guard;
+            currentRole = 'guard';
+            document.getElementById('guardNameDisplay').textContent = guard.name;
+            document.getElementById('gateDisplay').textContent = guard.gate;
+            loadGuardDashboard();
+            showScreen('guardScreen');
+            updateGuardStats();
+            renderGuardRecentScans();
+        } else {
+            errorDiv.textContent = 'Invalid badge number or password. Try G001/1234';
+            errorDiv.style.display = 'block';
+        }
+    } else if (selectedRole === 'admin') {
+        const admin = users.admins.find(a => a.id === username && a.password === password);
+        if (admin) {
+            currentUser = admin;
+            currentRole = 'admin';
+            document.getElementById('adminNameDisplay').textContent = admin.name;
+            loadAdminDashboard();
+            showScreen('adminScreen');
+        } else {
+            errorDiv.textContent = 'Invalid admin credentials. Try A001/1234';
+            errorDiv.style.display = 'block';
+        }
+    }
+}
+
+// ========== FORGOT PASSWORD ==========
+function showForgotPassword() {
+    showScreen('forgotPasswordScreen');
+}
+
+function resetPassword() {
+    const username = document.getElementById('resetUsername').value.trim();
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    const errorDiv = document.getElementById('resetError');
+    const successDiv = document.getElementById('resetSuccess');
+    
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    if (newPass !== confirmPass) {
+        errorDiv.textContent = 'Passwords do not match';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    let found = false;
+    // Check guards
+    const guardIndex = users.guards.findIndex(g => g.id === username);
+    if (guardIndex !== -1) {
+        users.guards[guardIndex].password = newPass;
+        found = true;
+    }
+    // Check admins
+    const adminIndex = users.admins.findIndex(a => a.id === username);
+    if (adminIndex !== -1) {
+        users.admins[adminIndex].password = newPass;
+        found = true;
+    }
+    // Check students
+    const studentIndex = users.students.findIndex(s => s.student_number.toString() === username || s.id === username);
+    if (studentIndex !== -1) {
+        users.students[studentIndex].password = newPass;
+        found = true;
+    }
+    
+    if (found) {
+        successDiv.textContent = 'Password reset successful! Please login.';
+        successDiv.style.display = 'block';
+        setTimeout(() => backToLogin(), 2000);
+    } else {
+        errorDiv.textContent = 'Username not found';
+        errorDiv.style.display = 'block';
+    }
+}
+
+function backToLogin() {
+    document.getElementById('resetUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
     showScreen('loginScreen');
+}
+
+function handleLogout() {
+    currentUser = null;
+    currentRole = null;
+    showScreen('loginScreen');
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+}
+
+// ========== ADMIN DASHBOARD ==========
+function loadAdminDashboard() {
+    updateAdminStats();
+    renderStudentsTable();
+    renderAssetsTable();
+    renderGuardsTable();
+    renderAdminLogsTable();
+    renderGuardReports();
+    populateStudentDropdown();
+}
+
+function updateAdminStats() {
+    document.getElementById('adminTotalStudents').textContent = users.students.filter(s => s.is_active !== false).length;
+    document.getElementById('adminTotalAssets').textContent = assets.filter(a => a.is_active !== false).length;
+    document.getElementById('adminTotalScans').textContent = auditLogs.length;
+    document.getElementById('adminFlaggedScans').textContent = auditLogs.filter(l => l.decision === 'FLAGGED').length;
+    
+    // Recent activity
+    const recent = auditLogs.slice(0, 10);
+    const container = document.getElementById('adminRecentActivity');
+    if (recent.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px">No recent activity</div>';
+    } else {
+        container.innerHTML = recent.map(log => `
+            <div class="table-row">
+                <span>${new Date(log.timestamp).toLocaleString()}</span>
+                <span>${log.student_name || 'Unknown'}</span>
+                <span class="history-chip chip-${log.decision.toLowerCase()}">${log.decision}</span>
+            </div>
+        `).join('');
+    }
+}
+
+function showAdminTab(tab) {
+    const tabs = ['dashboard', 'students', 'assets', 'scans', 'guards', 'logs'];
+    tabs.forEach(t => {
+        document.getElementById(`admin${t.charAt(0).toUpperCase() + t.slice(1)}Tab`).classList.remove('active');
+        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.remove('active');
+    });
+    document.getElementById(`admin${tab.charAt(0).toUpperCase() + tab.slice(1)}Tab`).classList.add('active');
+    document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+    
+    if (tab === 'students') renderStudentsTable();
+    if (tab === 'assets') renderAssetsTable();
+    if (tab === 'guards') renderGuardsTable();
+    if (tab === 'logs') renderAdminLogsTable();
+    if (tab === 'scans') renderGuardReports();
+}
+
+// Student Management
+function registerStudent() {
+    const studentNumber = document.getElementById('newStudentNumber').value;
+    const name = document.getElementById('newStudentName').value;
+    const password = document.getElementById('newStudentPassword').value;
+    const accessibility = document.getElementById('newAccessibility').value;
+    
+    if (!studentNumber || !name || !password) {
+        document.getElementById('studentRegMessage').innerHTML = '<span style="color:red">Fill all fields</span>';
+        return;
+    }
+    
+    const newStudent = {
+        id: 'S' + String(users.students.length + 1).padStart(3, '0'),
+        student_number: parseInt(studentNumber),
+        name: name.toUpperCase(),
+        password: password,
+        accessibility: accessibility,
+        is_active: true
+    };
+    users.students.push(newStudent);
+    
+    document.getElementById('studentRegMessage').innerHTML = '<span style="color:green">✓ Student registered successfully!</span>';
+    document.getElementById('newStudentNumber').value = '';
+    document.getElementById('newStudentName').value = '';
+    document.getElementById('newStudentPassword').value = '';
+    renderStudentsTable();
+    populateStudentDropdown();
+    updateAdminStats();
+}
+
+function deleteStudent(studentId) {
+    if (confirm('Delete this student? All linked assets will also be deleted.')) {
+        const studentIndex = users.students.findIndex(s => s.id === studentId);
+        if (studentIndex !== -1) users.students.splice(studentIndex, 1);
+        // Delete linked assets
+        for (let i = assets.length - 1; i >= 0; i--) {
+            if (assets[i].student_id === studentId) assets.splice(i, 1);
+        }
+        renderStudentsTable();
+        renderAssetsTable();
+        populateStudentDropdown();
+        updateAdminStats();
+    }
+}
+
+function renderStudentsTable() {
+    const container = document.getElementById('studentsTable');
+    const searchTerm = document.getElementById('studentSearch')?.value.toLowerCase() || '';
+    const filtered = users.students.filter(s => 
+        s.name.toLowerCase().includes(searchTerm) || 
+        s.student_number.toString().includes(searchTerm)
+    );
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No students found</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(s => `
+        <div class="table-row">
+            <div><strong>${s.student_number}</strong><br><small>${s.name}</small><br><small>${s.accessibility}</small></div>
+            <button class="delete-btn" onclick="deleteStudent('${s.id}')">Delete</button>
+        </div>
+    `).join('');
+}
+
+function filterStudents() { renderStudentsTable(); }
+
+// Asset Management
+function registerAsset() {
+    const barcodeId = document.getElementById('newAssetBarcode').value;
+    const assetType = document.getElementById('newAssetType').value;
+    const serialNumber = document.getElementById('newAssetSerial').value;
+    const studentId = document.getElementById('assetStudentId').value;
+    
+    if (!barcodeId || !studentId) {
+        document.getElementById('assetRegMessage').innerHTML = '<span style="color:red">Fill barcode and select student</span>';
+        return;
+    }
+    
+    const newAsset = {
+        id: 'AST' + String(assets.length + 1).padStart(3, '0'),
+        barcode_id: barcodeId.toUpperCase(),
+        asset_type: assetType,
+        serial_number: serialNumber,
+        student_id: studentId,
+        is_active: true
+    };
+    assets.push(newAsset);
+    
+    document.getElementById('assetRegMessage').innerHTML = '<span style="color:green">✓ Asset registered and linked to student!</span>';
+    document.getElementById('newAssetBarcode').value = '';
+    document.getElementById('newAssetSerial').value = '';
+    renderAssetsTable();
+    updateAdminStats();
+}
+
+function deleteAsset(assetId) {
+    if (confirm('Delete this asset?')) {
+        const index = assets.findIndex(a => a.id === assetId);
+        if (index !== -1) assets.splice(index, 1);
+        renderAssetsTable();
+        updateAdminStats();
+    }
+}
+
+function renderAssetsTable() {
+    const container = document.getElementById('assetsTable');
+    const assetsWithStudents = assets.map(a => {
+        const student = users.students.find(s => s.id === a.student_id);
+        return { ...a, student_name: student?.name || 'Unknown', student_number: student?.student_number || 'N/A' };
+    });
+    
+    if (assetsWithStudents.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No assets registered</div>';
+        return;
+    }
+    
+    container.innerHTML = assetsWithStudents.map(a => `
+        <div class="table-row">
+            <div><strong>${a.barcode_id}</strong><br><small>${a.asset_type}</small><br><small>Owner: ${a.student_name} (${a.student_number})</small></div>
+            <button class="delete-btn" onclick="deleteAsset('${a.id}')">Delete</button>
+        </div>
+    `).join('');
+}
+
+function populateStudentDropdown() {
+    const select = document.getElementById('assetStudentId');
+    select.innerHTML = '<option value="">-- Select Student --</option>' + 
+        users.students.filter(s => s.is_active !== false).map(s => 
+            `<option value="${s.id}">${s.student_number} - ${s.name}</option>`
+        ).join('');
+}
+
+// Guard Management
+function registerGuard() {
+    const badge = document.getElementById('newGuardBadge').value;
+    const name = document.getElementById('newGuardName').value;
+    const password = document.getElementById('newGuardPassword').value;
+    const gate = document.getElementById('newGuardGate').value;
+    
+    if (!badge || !name || !password) {
+        document.getElementById('guardRegMessage').innerHTML = '<span style="color:red">Fill all fields</span>';
+        return;
+    }
+    
+    users.guards.push({ id: badge.toUpperCase(), name: name, password: password, role: 'guard', gate: gate });
+    
+    document.getElementById('guardRegMessage').innerHTML = '<span style="color:green">✓ Guard registered successfully!</span>';
+    document.getElementById('newGuardBadge').value = '';
+    document.getElementById('newGuardName').value = '';
+    document.getElementById('newGuardPassword').value = '';
+    renderGuardsTable();
+}
+
+function deleteGuard(guardId) {
+    if (confirm('Delete this guard?')) {
+        const index = users.guards.findIndex(g => g.id === guardId);
+        if (index !== -1) users.guards.splice(index, 1);
+        renderGuardsTable();
+    }
+}
+
+function renderGuardsTable() {
+    const container = document.getElementById('guardsTable');
+    if (users.guards.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No guards registered</div>';
+        return;
+    }
+    
+    container.innerHTML = users.guards.map(g => `
+        <div class="table-row">
+            <div><strong>${g.id}</strong><br><small>${g.name}</small><br><small>${g.gate}</small></div>
+            <button class="delete-btn" onclick="deleteGuard('${g.id}')">Delete</button>
+        </div>
+    `).join('');
+}
+
+// Guard Scan Reports
+function renderGuardReports() {
+    const container = document.getElementById('guardReportsTable');
+    const guardFilter = document.getElementById('guardFilter').value;
+    
+    // Group scans by guard
+    const guardStats = {};
+    auditLogs.forEach(log => {
+        if (guardFilter !== 'ALL' && log.guard_id !== guardFilter) return;
+        if (!guardStats[log.guard_id]) {
+            guardStats[log.guard_id] = { total: 0, authorised: 0, flagged: 0, denied: 0 };
+        }
+        guardStats[log.guard_id].total++;
+        if (log.decision === 'AUTHORISED') guardStats[log.guard_id].authorised++;
+        else if (log.decision === 'FLAGGED') guardStats[log.guard_id].flagged++;
+        else if (log.decision === 'DENIED') guardStats[log.guard_id].denied++;
+    });
+    
+    // Populate guard filter dropdown
+    const guardSelect = document.getElementById('guardFilter');
+    if (guardSelect.innerHTML === '<option value="ALL">All Guards</option>' || guardSelect.options.length <= 1) {
+        guardSelect.innerHTML = '<option value="ALL">All Guards</option>' + 
+            users.guards.map(g => `<option value="${g.id}">${g.id} - ${g.name}</option>`).join('');
+    }
+    
+    if (Object.keys(guardStats).length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No scan reports available</div>';
+        return;
+    }
+    
+    container.innerHTML = Object.entries(guardStats).map(([guardId, stats]) => `
+        <div class="table-row">
+            <div><strong>Guard: ${guardId}</strong></div>
+            <div>Total: ${stats.total} | ✅ ${stats.authorised} | ⚠️ ${stats.flagged} | ❌ ${stats.denied}</div>
+        </div>
+    `).join('');
+}
+
+function filterScansByGuard() { renderGuardReports(); }
+
+// Admin Logs
+function renderAdminLogsTable() {
+    const container = document.getElementById('logsTable');
+    const filter = document.getElementById('logFilter')?.value || 'ALL';
+    let filtered = auditLogs;
+    if (filter !== 'ALL') filtered = auditLogs.filter(l => l.decision === filter);
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No logs found</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.slice(0, 100).map(log => `
+        <div class="table-row">
+            <div><small>${new Date(log.timestamp).toLocaleString()}</small><br><strong>${log.student_name || 'Unknown'}</strong><br><small>${log.barcode_id_scanned}</small></div>
+            <div><span class="history-chip chip-${log.decision.toLowerCase()}">${log.decision}</span><br><small>Guard: ${log.guard_id}</small></div>
+        </div>
+    `).join('');
+}
+
+function filterLogs() { renderAdminLogsTable(); }
+
+function exportAllLogs() {
+    let csv = 'Timestamp,Guard ID,Student Name,Barcode,Decision,Gate\n';
+    auditLogs.forEach(l => {
+        csv += `${l.timestamp},${l.guard_id},${l.student_name || 'Unknown'},${l.barcode_id_scanned},${l.decision},${l.gate_id || 'GATE_1'}\n`;
+    });
+    downloadCSV(csv, `spass_all_logs_${Date.now()}.csv`);
+}
+
+// ========== GUARD FUNCTIONS ==========
+function loadGuardDashboard() {
+    updateGuardStats();
+    renderGuardRecentScans();
+}
+
+function updateGuardStats() {
+    const today = new Date().toDateString();
+    const todayLogs = auditLogs.filter(l => l.guard_id === currentUser?.id && new Date(l.timestamp).toDateString() === today);
+    document.getElementById('guardScanCount').textContent = todayLogs.length;
+    document.getElementById('guardAuthCount').textContent = todayLogs.filter(l => l.decision === 'AUTHORISED').length;
+    document.getElementById('guardFlaggedCount').textContent = todayLogs.filter(l => l.decision === 'FLAGGED').length;
+    document.getElementById('guardDeniedCount').textContent = todayLogs.filter(l => l.decision === 'DENIED').length;
+}
+
+function renderGuardRecentScans() {
+    const container = document.getElementById('guardRecentScans');
+    const recent = auditLogs.filter(l => l.guard_id === currentUser?.id).slice(0, 10);
+    
+    if (recent.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8">No recent scans</div>';
+        return;
+    }
+    
+    container.innerHTML = recent.map(log => `
+        <div class="history-item" style="margin-bottom:8px">
+            <div class="history-border ${log.decision === 'AUTHORISED' ? 'green' : (log.decision === 'FLAGGED' ? 'amber' : 'red')}"></div>
+            <div class="history-content">
+                <div class="history-student">${log.student_name || 'Unknown'}</div>
+                <div class="history-barcode">${log.barcode_id_scanned}</div>
+                <div class="history-time">${new Date(log.timestamp).toLocaleTimeString()}</div>
+            </div>
+            <div class="history-chip chip-${log.decision.toLowerCase()}">${log.decision}</div>
+        </div>
+    `).join('');
 }
 
 function startScan() {
     showScreen('scanScreen');
 }
 
+function cancelScan() {
+    showScreen('guardScreen');
+}
+
 function simulateScan() {
     const barcodeId = document.getElementById('demoBarcodeSelect').value;
-    if (!barcodeId) { alert('Select a barcode'); return; }
+    if (!barcodeId) {
+        alert('Please select a barcode to scan');
+        return;
+    }
     
     if (!navigator.onLine) {
         offlineQueue.push({ id: Date.now(), barcode_id: barcodeId, timestamp: new Date().toISOString() });
         saveOfflineQueue();
         updateOfflineBanner();
-        showResult({ decision: 'OFFLINE', subtext: 'Scan Saved', message: 'No network. Will sync later.', colour: 'amber' });
+        showResult({ decision: 'OFFLINE', subtext: 'Scan Saved', message: 'No network. Will sync when online.', colour: 'amber' });
         return;
     }
     
-    const asset = assets[barcodeId];
+    const asset = assets.find(a => a.barcode_id === barcodeId);
     let decision, colour, message, studentInfo = null;
     
     if (!asset) {
-        decision = 'DENIED'; colour = 'red'; message = 'Asset not registered';
-    } else if (asset.status === 'MISMATCH') {
-        decision = 'FLAGGED'; colour = 'amber'; message = 'Ownership mismatch. Manual review required.';
-        studentInfo = asset;
+        decision = 'DENIED';
+        colour = 'red';
+        message = 'Asset not registered in system';
     } else {
-        decision = 'AUTHORISED'; colour = 'green'; message = 'Exit Authorised. Asset verified.';
-        studentInfo = asset;
+        const student = users.students.find(s => s.id === asset.student_id);
+        if (asset.student_id && student) {
+            decision = 'AUTHORISED';
+            colour = 'green';
+            message = 'Exit Authorised. Asset verified.';
+            studentInfo = { ...asset, student_name: student.name, student_number: student.student_number };
+        } else {
+            decision = 'FLAGGED';
+            colour = 'amber';
+            message = 'Asset ownership mismatch. Manual verification required.';
+            studentInfo = asset;
+        }
     }
     
-    const student = students[asset?.student_id];
+    const student = studentInfo ? users.students.find(s => s.id === studentInfo.student_id) : null;
     const requiresVoice = student?.accessibility === 'VISUAL_IMPAIRMENT';
     
-    auditLogs.unshift({
-        id: Date.now(), timestamp: new Date().toISOString(), guard_id: currentGuard?.id,
-        student_id: asset?.student_id, student_name: asset?.student_name,
-        barcode_id_scanned: barcodeId, decision: decision
-    });
+    const logEntry = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        guard_id: currentUser?.id,
+        student_id: student?.id,
+        student_name: student?.name,
+        barcode_id_scanned: barcodeId,
+        decision: decision,
+        gate_id: currentUser?.gate || 'GATE_1'
+    };
+    auditLogs.unshift(logEntry);
     saveAuditLogs();
-    updateStats();
+    
+    updateGuardStats();
+    renderGuardRecentScans();
+    if (currentRole === 'admin') updateAdminStats();
     
     showResult({ decision, subtext: decision === 'AUTHORISED' ? 'Exit Permitted' : (decision === 'FLAGGED' ? 'Manual Review Required' : 'Do Not Allow Exit'), message, colour, studentInfo, requiresVoice, barcode: barcodeId });
 }
@@ -95,21 +566,19 @@ function showResult(data) {
     
     if (data.studentInfo) {
         html += `<div class="result-card">
-            <div class="result-student-name">${data.studentInfo.student_name}</div>
-            <div class="result-detail">Student: ${data.studentInfo.student_number}</div>
-            <div class="result-detail">Asset: ${data.studentInfo.asset_type}</div>
+            <div class="result-student-name">${data.studentInfo.student_name || 'Unknown'}</div>
+            <div class="result-detail">Student Number: ${data.studentInfo.student_number || 'N/A'}</div>
+            <div class="result-detail">Asset Type: ${data.studentInfo.asset_type || 'Unknown'}</div>
             <div class="result-detail">Barcode: ${data.barcode}</div>
         </div>`;
     } else if (data.decision !== 'OFFLINE') {
         html += `<div class="result-card"><div class="result-detail">Barcode: ${data.barcode}</div><div>${data.message}</div></div>`;
-    } else {
-        html += `<div class="result-card"><div>${data.message}</div></div>`;
     }
     
-    if (data.requiresVoice) html += `<div class="voice-badge">🎤 Voice Guidance Available</div>`;
-    html += `<button onclick="backToHome()" class="btn-done">DONE</button>`;
+    if (data.requiresVoice) html += `<div class="voice-badge">🎤 Voice Guidance Available - Audio assistance enabled</div>`;
+    html += `<button onclick="backToGuardDashboard()" class="btn-done">DONE</button>`;
     if (data.decision === 'FLAGGED' || data.decision === 'DENIED') {
-        html += `<button onclick="alert('Supervisor notified')" class="btn-alert">⚠️ ALERT SUPERVISOR</button>`;
+        html += `<button onclick="alertSupervisor()" class="btn-alert">⚠️ ALERT SUPERVISOR</button>`;
     }
     html += `</div>`;
     
@@ -117,64 +586,81 @@ function showResult(data) {
     showScreen('resultScreen');
 }
 
-function backToHome() { showScreen('homeScreen'); document.getElementById('demoBarcodeSelect').value = ''; }
-function cancelScan() { showScreen('homeScreen'); document.getElementById('demoBarcodeSelect').value = ''; }
-function goHome() { showScreen('homeScreen'); }
+function backToGuardDashboard() {
+    showScreen('guardScreen');
+    document.getElementById('demoBarcodeSelect').value = '';
+}
 
-function viewHistory() { renderHistory(); showScreen('historyScreen'); }
+function alertSupervisor() {
+    alert('🚨 Supervisor has been notified of this security incident.');
+}
 
-function renderHistory() {
-    const list = document.getElementById('historyList');
-    let filtered = currentFilter === 'ALL' ? auditLogs : auditLogs.filter(l => l.decision === currentFilter);
-    if (filtered.length === 0) { list.innerHTML = '<div class="empty-history">No scan events yet.</div>'; return; }
+function viewGuardHistory() {
+    renderGuardHistory();
+    showScreen('guardHistoryScreen');
+}
+
+function backToGuardDashboardFromHistory() {
+    showScreen('guardScreen');
+}
+
+function renderGuardHistory() {
+    const container = document.getElementById('guardHistoryList');
+    let filtered = auditLogs.filter(l => l.guard_id === currentUser?.id);
+    if (guardHistoryFilter !== 'ALL') filtered = filtered.filter(l => l.decision === guardHistoryFilter);
     
-    list.innerHTML = filtered.map(log => `
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-history">No scan events found.</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(log => `
         <div class="history-item">
-            <div class="history-border ${log.decision === 'AUTHORISED' ? 'border-green' : (log.decision === 'FLAGGED' ? 'border-amber' : 'border-red')}"></div>
+            <div class="history-border ${log.decision === 'AUTHORISED' ? 'green' : (log.decision === 'FLAGGED' ? 'amber' : 'red')}"></div>
             <div class="history-content">
-                <div class="history-student">${log.student_name || 'Unknown'}</div>
+                <div class="history-student">${log.student_name || 'Unknown Student'}</div>
                 <div class="history-barcode">Barcode: ${log.barcode_id_scanned}</div>
                 <div class="history-time">${new Date(log.timestamp).toLocaleString()}</div>
             </div>
-            <div class="history-chip ${log.decision === 'AUTHORISED' ? 'chip-green' : (log.decision === 'FLAGGED' ? 'chip-amber' : 'chip-red')}">${log.decision}</div>
+            <div class="history-chip chip-${log.decision.toLowerCase()}">${log.decision}</div>
         </div>
     `).join('');
 }
 
-function filterHistory(filter) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-chip').forEach((c, i) => {
+function filterGuardHistory(filter) {
+    guardHistoryFilter = filter;
+    document.querySelectorAll('#guardHistoryScreen .filter-chip').forEach((chip, i) => {
         const filters = ['ALL', 'AUTHORISED', 'FLAGGED', 'DENIED'];
-        c.classList.toggle('active', filters[i] === filter);
+        chip.classList.toggle('active', filters[i] === filter);
     });
-    renderHistory();
+    renderGuardHistory();
 }
 
-function exportLogs() {
-    let csv = 'timestamp,guard_id,student_id,barcode_id,decision\n';
-    auditLogs.forEach(l => csv += `${l.timestamp},${l.guard_id},${l.student_id || ''},${l.barcode_id_scanned},${l.decision}\n`);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `spass_log_${Date.now()}.csv`;
-    a.click();
-    alert('Log exported as CSV');
+function exportGuardLogs() {
+    let csv = 'Timestamp,Student Name,Barcode,Decision,Gate\n';
+    const filtered = auditLogs.filter(l => l.guard_id === currentUser?.id);
+    filtered.forEach(l => {
+        csv += `${l.timestamp},${l.student_name || 'Unknown'},${l.barcode_id_scanned},${l.decision},${l.gate_id}\n`;
+    });
+    downloadCSV(csv, `guard_${currentUser?.id}_logs_${Date.now()}.csv`);
 }
 
+// ========== OFFLINE QUEUE ==========
 function saveOfflineQueue() { localStorage.setItem('spass_offline', JSON.stringify(offlineQueue)); }
 function loadOfflineQueue() { const saved = localStorage.getItem('spass_offline'); if(saved) { offlineQueue = JSON.parse(saved); updateOfflineBanner(); } }
-function updateOfflineBanner() { 
+function updateOfflineBanner() {
     const banner = document.getElementById('offlineQueueBanner');
-    if(offlineQueue.length > 0) { banner.style.display = 'block'; document.getElementById('queueSize').innerText = offlineQueue.length; }
-    else { banner.style.display = 'none'; }
+    if(banner && offlineQueue.length > 0) { banner.style.display = 'block'; document.getElementById('queueSize').innerText = offlineQueue.length; }
+    else if(banner) { banner.style.display = 'none'; }
 }
 function syncOfflineQueue() {
     if(offlineQueue.length === 0) { alert('No offline scans'); return; }
     let synced = 0;
     offlineQueue.forEach(scan => {
-        const asset = assets[scan.barcode_id];
+        const asset = assets.find(a => a.barcode_id === scan.barcode_id);
         if(asset) {
-            auditLogs.unshift({ id: Date.now()+synced, timestamp: scan.timestamp, guard_id: currentGuard?.id, student_id: asset.student_id, student_name: asset.student_name, barcode_id_scanned: scan.barcode_id, decision: asset.status === 'MATCH' ? 'AUTHORISED' : 'FLAGGED' });
+            const student = users.students.find(s => s.id === asset.student_id);
+            auditLogs.unshift({ id: Date.now()+synced, timestamp: scan.timestamp, guard_id: currentUser?.id, student_id: student?.id, student_name: student?.name, barcode_id_scanned: scan.barcode_id, decision: asset.student_id ? 'AUTHORISED' : 'FLAGGED', gate_id: currentUser?.gate });
             synced++;
         }
     });
@@ -182,24 +668,32 @@ function syncOfflineQueue() {
     offlineQueue = [];
     saveOfflineQueue();
     updateOfflineBanner();
-    updateStats();
-    alert(`${synced} scans synced`);
+    updateGuardStats();
+    renderGuardRecentScans();
+    alert(`${synced} scans synced successfully`);
 }
 
+// ========== STORAGE ==========
 function saveAuditLogs() { localStorage.setItem('spass_logs', JSON.stringify(auditLogs)); }
 function loadAuditLogs() { const saved = localStorage.getItem('spass_logs'); if(saved) auditLogs = JSON.parse(saved); }
-function updateStats() {
-    const today = new Date().toDateString();
-    const todayLogs = auditLogs.filter(l => new Date(l.timestamp).toDateString() === today);
-    document.getElementById('scanCount').innerText = todayLogs.length;
-    document.getElementById('authCount').innerText = todayLogs.filter(l => l.decision === 'AUTHORISED').length;
-    document.getElementById('flaggedCount').innerText = todayLogs.filter(l => l.decision === 'FLAGGED').length;
+function downloadCSV(csv, filename) {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(blob);
 }
-function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-window.addEventListener('online', () => { if(offlineQueue.length > 0 && currentGuard) alert('Network restored! Click "Sync Offline Scans"'); });
-window.addEventListener('offline', () => alert('Network disconnected. Scans will be saved offline.'));
+// ========== NETWORK LISTENERS ==========
+window.addEventListener('online', () => { if(offlineQueue.length > 0 && currentUser) alert('Network restored! Click "Sync Offline Scans"'); });
+window.addEventListener('offline', () => alert('⚠️ Network disconnected. Scans will be saved offline.'));
 
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+}
+
+// ========== INITIALIZE ==========
 loadAuditLogs();
 loadOfflineQueue();
-updateStats();
