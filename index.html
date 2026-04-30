@@ -6,12 +6,11 @@
     <title>S-PASS | UL Safe-Pass Asset Security System</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- ========== LOGIN SCREEN ========== -->
+        <!-- LOGIN SCREEN -->
         <div id="loginScreen" class="screen active">
             <div class="login-wrapper">
                 <div class="logo-container">
@@ -55,7 +54,7 @@
             </div>
         </div>
 
-        <!-- ========== FORGOT PASSWORD WITH REAL EMAIL ========== -->
+        <!-- FORGOT PASSWORD SCREEN -->
         <div id="forgotPasswordScreen" class="screen">
             <div class="login-wrapper">
                 <div class="logo-container">
@@ -66,19 +65,19 @@
                 <div class="login-card">
                     <div id="step1Container">
                         <div class="input-group">
-                            <label class="input-label">Gmail Address</label>
+                            <label class="input-label">Your Gmail Address</label>
                             <input type="email" id="resetEmail" class="input" placeholder="yourname@gmail.com">
                         </div>
                         <div class="input-group">
                             <label class="input-label">Username / Badge Number</label>
                             <input type="text" id="resetUsername" class="input" placeholder="Enter your username">
                         </div>
-                        <button onclick="sendResetPin()" class="btn-login">📧 SEND VERIFICATION PIN</button>
+                        <button onclick="sendResetPin()" class="btn-login">📧 SEND VERIFICATION EMAIL</button>
                     </div>
                     
                     <div id="step2Container" style="display:none">
                         <div class="input-group">
-                            <label class="input-label">Enter 6-Digit PIN</label>
+                            <label class="input-label">Enter 6-Digit PIN from Email</label>
                             <input type="text" id="resetPin" class="input" placeholder="Enter PIN sent to your email" maxlength="6">
                         </div>
                         <button onclick="verifyPin()" class="btn-login">✓ VERIFY PIN</button>
@@ -104,7 +103,7 @@
             </div>
         </div>
 
-        <!-- ========== ADMIN DASHBOARD ========== -->
+        <!-- ADMIN DASHBOARD -->
         <div id="adminScreen" class="screen">
             <div class="admin-header">
                 <div class="header-left">
@@ -117,7 +116,6 @@
                 </div>
             </div>
             
-            <!-- Alert Notification Badge -->
             <div id="alertBadge" class="alert-badge" style="display:none" onclick="showAdminTab('alerts')">
                 🔔 <span id="alertCount">0</span> Pending Verifications
             </div>
@@ -152,7 +150,7 @@
                             <input type="email" id="newStudentEmail" class="input-small" placeholder="Gmail Address">
                             <input type="password" id="newStudentPassword" class="input-small" placeholder="Password">
                             <select id="newAccessibility" class="input-small">
-                                <option value="NONE">No Accessibility Needs</option>
+                                <option value="NONE">None</option>
                                 <option value="VISUAL_IMPAIRMENT">👁️ Visual Impairment (Voice Guidance)</option>
                             </select>
                             <button onclick="registerStudent()" class="btn-secondary">➕ Register Student</button>
@@ -168,8 +166,9 @@
                 
                 <div id="adminAssetsTab" class="admin-tab">
                     <div class="section-card">
-                        <div class="section-title">➕ Register New Asset (Auto-generates Barcode)</div>
+                        <div class="section-title">➕ Register New Asset</div>
                         <div class="form-row">
+                            <input type="text" id="newAssetBarcode" class="input-small" placeholder="Barcode ID (e.g., BAR001)">
                             <select id="newAssetType" class="input-small">
                                 <option value="LAPTOP">💻 Laptop</option>
                                 <option value="FRIDGE">🧊 Fridge</option>
@@ -178,12 +177,12 @@
                             </select>
                             <input type="text" id="newAssetSerial" class="input-small" placeholder="Serial Number">
                             <select id="assetStudentId" class="input-small"></select>
-                            <button onclick="registerAssetWithBarcode()" class="btn-secondary">➕ Generate Barcode & Register</button>
+                            <button onclick="registerAsset()" class="btn-secondary">➕ Register Asset</button>
                         </div>
                         <div id="assetRegMessage" class="reg-message"></div>
                     </div>
                     <div class="section-card">
-                        <div class="section-title">📦 All Assets (with unique barcodes)</div>
+                        <div class="section-title">📦 All Assets</div>
                         <div id="assetsTable" class="data-table"></div>
                     </div>
                 </div>
@@ -202,6 +201,19 @@
                             <option value="ALL">All Guards</option>
                         </select>
                         <div id="guardReportsTable" class="data-table"></div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-title">📋 All Scan History (Admin Only)</div>
+                        <div class="filter-row">
+                            <select id="logFilter" class="input-small" onchange="filterLogs()">
+                                <option value="ALL">All Decisions</option>
+                                <option value="AUTHORISED">Authorised Only</option>
+                                <option value="FLAGGED">Flagged Only</option>
+                                <option value="DENIED">Denied Only</option>
+                            </select>
+                            <button onclick="exportAllLogs()" class="btn-export">📎 Export CSV</button>
+                        </div>
+                        <div id="logsTable" class="data-table"></div>
                     </div>
                 </div>
                 
@@ -227,26 +239,10 @@
                         <div id="guardsTable" class="data-table"></div>
                     </div>
                 </div>
-                
-                <div id="adminLogsTab" class="admin-tab">
-                    <div class="section-card">
-                        <div class="section-title">📋 All Exit Events (Immutable Audit Log)</div>
-                        <div class="filter-row">
-                            <select id="logFilter" class="input-small" onchange="filterLogs()">
-                                <option value="ALL">All Decisions</option>
-                                <option value="AUTHORISED">Authorised Only</option>
-                                <option value="FLAGGED">Flagged Only</option>
-                                <option value="DENIED">Denied Only</option>
-                            </select>
-                            <button onclick="exportAllLogs()" class="btn-export">📎 Export CSV</button>
-                        </div>
-                        <div id="logsTable" class="data-table"></div>
-                    </div>
-                </div>
             </div>
         </div>
 
-        <!-- ========== GUARD DASHBOARD ========== -->
+        <!-- GUARD DASHBOARD (No History View) -->
         <div id="guardScreen" class="screen">
             <div class="guard-header">
                 <div class="logo-small">🛡️ S-PASS Guard</div>
@@ -272,14 +268,13 @@
                 </div>
                 
                 <div class="section-card">
-                    <div class="section-title">📋 Recent Scan Activity</div>
+                    <div class="section-title">📋 Today's Scan Activity</div>
                     <div id="guardRecentScans" class="scan-list"></div>
-                    <button onclick="viewGuardHistory()" class="btn-history">VIEW FULL HISTORY</button>
                 </div>
             </div>
         </div>
 
-        <!-- ========== SCAN SCREEN WITH REAL BARCODE SCANNER ========== -->
+        <!-- SCAN SCREEN WITH REAL BARCODE SCANNER -->
         <div id="scanScreen" class="screen">
             <div class="scan-header">
                 <button onclick="cancelScan()" class="back-btn">← Back</button>
@@ -311,27 +306,9 @@
             </div>
         </div>
 
-        <!-- ========== RESULT SCREEN ========== -->
+        <!-- RESULT SCREEN -->
         <div id="resultScreen" class="screen">
             <div id="resultContainer" class="result-container"></div>
-        </div>
-
-        <!-- ========== GUARD HISTORY SCREEN ========== -->
-        <div id="guardHistoryScreen" class="screen">
-            <div class="history-header">
-                <button onclick="backToGuardDashboard()" class="back-btn">← Back</button>
-                <div class="history-title">Scan History</div>
-                <button onclick="exportGuardLogs()" class="export-btn">📎 Export</button>
-            </div>
-            
-            <div class="filter-bar">
-                <button onclick="filterGuardHistory('ALL')" class="filter-chip active">All</button>
-                <button onclick="filterGuardHistory('AUTHORISED')" class="filter-chip">✅ Authorised</button>
-                <button onclick="filterGuardHistory('FLAGGED')" class="filter-chip">⚠️ Flagged</button>
-                <button onclick="filterGuardHistory('DENIED')" class="filter-chip">❌ Denied</button>
-            </div>
-            
-            <div id="guardHistoryList" class="history-list"></div>
         </div>
     </div>
 
