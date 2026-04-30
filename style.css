@@ -62,7 +62,6 @@ body {
     font-weight: 800;
     color: white;
     letter-spacing: 2px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .logo-sub {
@@ -94,7 +93,6 @@ body {
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
 }
 
 .role-btn.active {
@@ -126,13 +124,11 @@ body {
     border: 2px solid #e2e8f0;
     border-radius: 12px;
     font-size: 15px;
-    transition: all 0.3s;
 }
 
 .input:focus {
     outline: none;
     border-color: #1a4a6f;
-    box-shadow: 0 0 0 3px rgba(26,74,111,0.1);
 }
 
 .btn-login {
@@ -145,11 +141,6 @@ body {
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.btn-login:hover {
-    transform: translateY(-2px);
 }
 
 .btn-secondary {
@@ -173,7 +164,6 @@ body {
     color: #1a4a6f;
     text-decoration: none;
     font-size: 13px;
-    font-weight: 500;
 }
 
 .security-badge {
@@ -285,7 +275,6 @@ body {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
 }
 
 .tab-btn.active {
@@ -320,7 +309,6 @@ body {
     padding: 20px;
     border-radius: 16px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .stat-icon {
@@ -349,7 +337,6 @@ body {
     border-radius: 20px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .section-title {
@@ -399,10 +386,6 @@ body {
     border-bottom: 1px solid #e2e8f0;
 }
 
-.table-row:hover {
-    background: #f8fafc;
-}
-
 .delete-btn {
     background: #ef4444;
     color: white;
@@ -420,7 +403,6 @@ body {
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 12px;
     margin-right: 6px;
 }
 
@@ -431,7 +413,6 @@ body {
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 12px;
 }
 
 /* Guard Dashboard */
@@ -459,18 +440,6 @@ body {
     border-radius: 16px;
     font-size: 18px;
     font-weight: 700;
-    cursor: pointer;
-}
-
-.btn-history {
-    width: 100%;
-    padding: 14px;
-    background: #e2e8f0;
-    color: #1a4a6f;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    margin-top: 12px;
     cursor: pointer;
 }
 
@@ -517,7 +486,6 @@ body {
     border: 2px solid #2E75B6;
     border-radius: 16px;
     position: relative;
-    background: transparent;
 }
 
 .scan-line-real {
@@ -528,7 +496,6 @@ body {
     height: 2px;
     background: #2E75B6;
     animation: scanReal 2s linear infinite;
-    box-shadow: 0 0 10px #2E75B6;
 }
 
 @keyframes scanReal {
@@ -674,13 +641,7 @@ body {
     cursor: pointer;
 }
 
-/* History */
-.history-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-}
-
+/* History Items */
 .history-item {
     background: white;
     border-radius: 14px;
@@ -688,7 +649,6 @@ body {
     margin-bottom: 12px;
     display: flex;
     align-items: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .history-border {
@@ -733,27 +693,10 @@ body {
 .chip-amber { background: #f59e0b20; color: #d97706; }
 .chip-red { background: #ef444420; color: #dc2626; }
 
-.filter-bar {
+.filter-row {
     display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    background: white;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.filter-chip {
-    padding: 6px 14px;
-    background: white;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.filter-chip.active {
-    background: #1a4a6f;
-    color: white;
-    border-color: #1a4a6f;
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
 .offline-banner {
@@ -772,23 +715,6 @@ body {
 }
 
 .mt-2 { margin-top: 12px; }
-
-.empty-history {
-    text-align: center;
-    color: #94a3b8;
-    padding: 40px;
-}
-
-.reg-message {
-    margin-top: 10px;
-    font-size: 13px;
-}
-
-.filter-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
 
 .header-left, .header-right {
     display: flex;
@@ -818,15 +744,6 @@ body {
     font-weight: 600;
 }
 
-.barcode-value {
-    font-family: monospace;
-    font-size: 12px;
-    background: #f1f5f9;
-    padding: 4px 8px;
-    border-radius: 6px;
-    display: inline-block;
-}
-
 .alerts-list {
     max-height: 500px;
     overflow-y: auto;
@@ -840,19 +757,18 @@ body {
     border-radius: 12px;
 }
 
-.alert-student {
-    font-weight: 700;
-    color: #92400e;
-}
-
-.alert-barcode {
-    font-size: 12px;
-    color: #b45309;
-    margin: 5px 0;
-}
-
 .alert-actions {
     margin-top: 10px;
     display: flex;
     gap: 10px;
+}
+
+.scan-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.reg-message {
+    margin-top: 10px;
+    font-size: 13px;
 }
